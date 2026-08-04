@@ -1,0 +1,65 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { TrendingDown, TrendingUp, type LucideIcon } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+
+interface StatCardProps {
+  title: string;
+  value: number | string;
+  growth?: number;
+  icon: LucideIcon;
+  index?: number;
+}
+
+export function StatCard({
+  title,
+  value,
+  growth,
+  icon: Icon,
+  index = 0,
+}: StatCardProps) {
+  const showGrowth = growth !== undefined && growth !== 0;
+  const isPositive = (growth ?? 0) >= 0;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: index * 0.08 }}
+    >
+      <Card className="glass-card overflow-hidden transition-shadow hover:shadow-md">
+        <CardContent className="p-5">
+          <div className="flex items-start justify-between">
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">{title}</p>
+              <p className="text-3xl font-bold tracking-tight">{value}</p>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+              <Icon className="h-5 w-5 text-primary" />
+            </div>
+          </div>
+          {showGrowth && (
+            <div className="mt-3 flex items-center gap-1.5">
+              {isPositive ? (
+                <TrendingUp className="h-3.5 w-3.5 text-success" />
+              ) : (
+                <TrendingDown className="h-3.5 w-3.5 text-destructive" />
+              )}
+              <span
+                className={cn(
+                  "text-xs font-medium",
+                  isPositive ? "text-success" : "text-destructive"
+                )}
+              >
+                {isPositive ? "+" : ""}
+                {growth}%
+              </span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}

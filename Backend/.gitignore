@@ -1,0 +1,35 @@
+# Dependencias
+node_modules/
+
+# Build
+dist/
+*.tsbuildinfo
+
+# Variables de entorno (secretos)
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Cobertura y tests
+coverage/
+.nyc_output/
+
+# SO
+.DS_Store
+Thumbs.db
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Temporales
+tmp/
+temp/
+*.tmp
