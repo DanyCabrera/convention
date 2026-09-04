@@ -1,15 +1,20 @@
 import { CICLOS, type Ciclo } from "@/lib/constants";
+import type { Plan } from "@/lib/plans";
 
 export type StudentStatus = "pending" | "confirmed" | "cancelled";
 export type TicketStatus = "generated" | "sent" | "delivered" | "failed";
+export type ParticipantType = "estudiante" | "docente";
 
 export interface Student {
   id: string;
   full_name: string;
   email: string;
-  phone: string;
-  carnet: string;
-  ciclo: Ciclo;
+  phone: string | null;
+  carnet: string | null;
+  ciclo: Ciclo | null;
+  plan: Plan | null;
+  participant_type: ParticipantType;
+  has_document?: boolean;
   status: StudentStatus;
   registered_at: string;
   updated_at: string;
@@ -32,7 +37,9 @@ export interface StudentWithTicket extends Student {
 
 export interface DashboardStats {
   totalStudents: number;
+  totalTeachers: number;
   ticketsSent: number;
+  ticketsGenerated: number;
   cyclesRegistered: number;
   emailsSent: number;
   confirmedParticipants: number;
@@ -46,8 +53,22 @@ export interface DashboardStats {
 }
 
 export interface CycleStats {
+  plan: Plan;
   ciclo: Ciclo;
   studentCount: number;
+  ticketsSent: number;
+  attendees: number;
+}
+
+export interface PlanStats {
+  plan: Plan;
+  studentCount: number;
+  ticketsSent: number;
+  attendees: number;
+}
+
+export interface DocenteStats {
+  teacherCount: number;
   ticketsSent: number;
   attendees: number;
 }
@@ -58,6 +79,13 @@ export interface CreateStudentInput {
   phone: string;
   carnet: string;
   ciclo: Ciclo;
+  plan?: Plan;
+}
+
+export interface CreateDocenteInput {
+  participant_type: "docente";
+  full_name: string;
+  email: string;
 }
 
 export interface ScanResult {
@@ -79,4 +107,4 @@ export interface EventInfo {
   university?: string;
 }
 
-export { CICLOS, type Ciclo };
+export { CICLOS, type Ciclo, type Plan };

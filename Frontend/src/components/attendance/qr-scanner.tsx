@@ -118,7 +118,7 @@ export function QrScanner({ onScan, paused = false }: QrScannerProps) {
 
         if (!isSecure) {
           setCameraError(
-            "La cámara requiere HTTPS o localhost. Usa la entrada manual del número de ticket abajo, o abre la app desde el PC con localhost."
+            "La cámara requiere una conexión segura (HTTPS). Si no funciona, ingresa el número de ticket manualmente abajo."
           );
         } else {
           setCameraError(

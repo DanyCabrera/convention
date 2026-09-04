@@ -2,17 +2,20 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import type { StudentWithTicket } from "@/types";
+import type { Plan } from "@/lib/plans";
+import type { ParticipantType, StudentWithTicket } from "@/types";
 
 interface UseStudentsOptions {
   ciclo?: number;
+  plan?: Plan;
   status?: string;
   search?: string;
+  tipo?: ParticipantType;
   enabled?: boolean;
 }
 
 export function useStudents(options: UseStudentsOptions = {}) {
-  const { ciclo, status, search, enabled = true } = options;
+  const { ciclo, plan, status, search, tipo, enabled = true } = options;
   const [data, setData] = useState<StudentWithTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,15 +25,15 @@ export function useStudents(options: UseStudentsOptions = {}) {
     setLoading(true);
     setError(null);
     try {
-      const students = await api.getStudents({ ciclo, status, search });
+      const students = await api.getStudents({ ciclo, plan, status, search, tipo });
       setData(students);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al cargar estudiantes");
+      setError(err instanceof Error ? err.message : "Error al cargar registros");
       setData([]);
     } finally {
       setLoading(false);
     }
-  }, [ciclo, status, search, enabled]);
+  }, [ciclo, plan, status, search, tipo, enabled]);
 
   useEffect(() => {
     refresh();

@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { formatCarnet, isValidCarnet } from "./carnet.js";
+import {
+  carnetPrefixErrorMessage,
+  formatCarnet,
+  isValidCarnet,
+} from "./carnet.js";
+import { getPlanFromCarnet, PLANS } from "./plan.js";
 
 export function capitalizeWords(value: string): string {
   return value
@@ -42,7 +47,7 @@ const carnetSchema = z
   .string()
   .trim()
   .refine(isValidCarnet, {
-    message: "Carnet inválido: formato 4-2-4/5/6 dígitos",
+    message: `Carnet inválido: formato 4-2-4/5/6 dígitos. ${carnetPrefixErrorMessage()}`,
   })
   .transform(formatCarnet);
 
@@ -52,19 +57,113 @@ const cicloSchema = z.coerce
     message: "Selecciona un ciclo válido (2, 4, 6, 8 o 10)",
   });
 
-export const createStudentSchema = z.object({
+const planSchema = z.enum(PLANS, {
+  errorMap: () => ({ message: "Selecciona un plan válido" }),
+});
+
+const studentFieldsSchema = z.object({
   full_name: nameSchema,
   email: emailSchema,
   phone: phoneSchema,
   carnet: carnetSchema,
   ciclo: cicloSchema,
+  plan: planSchema.optional(),
 });
 
-export const updateStudentSchema = createStudentSchema.partial().extend({
-  status: z.enum(["pending", "confirmed", "cancelled"]).optional(),
+export const createStudentSchema = studentFieldsSchema.transform((data) => {
+  const plan = getPlanFromCarnet(data.carnet)!;
+  if (data.plan && data.plan !== plan) {
+    throw new z.ZodError([
+      {
+        code: z.ZodIssueCode.custom,
+        path: ["carnet"],
+        message: "El carnet no corresponde al plan seleccionado",
+      },
+    ]);
+  }
+  return { ...data, plan, participant_type: "estudiante" as const };
 });
+
+export const createDocenteSchema = z.object({
+  participant_type: z.literal("docente"),
+  full_name: nameSchema,
+  email: emailSchema,
+});
+
+export const createParticipantSchema = z.union([
+  createDocenteSchema,
+  studentFieldsSchema.transform((data) => {
+    const plan = getPlanFromCarnet(data.carnet)!;
+    if (data.plan && data.plan !== plan) {
+      throw new z.ZodError([
+        {
+          code: z.ZodIssueCode.custom,
+          path: ["carnet"],
+          message: "El carnet no corresponde al plan seleccionado",
+        },
+      ]);
+    }
+    return { ...data, plan, participant_type: "estudiante" as const };
+  }),
+]);
+
+export const participantTypeFilterSchema = z
+  .enum(["estudiante", "docente"])
+  .optional();
+
+export const planFilterSchema = planSchema;
+
+export const updateStudentSchema = studentFieldsSchema
+  .partial()
+  .extend({
+    status: z.enum(["pending", "cancelled"]).optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.carnet) return;
+    const plan = getPlanFromCarnet(data.carnet);
+    if (!plan) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["carnet"],
+        message: carnetPrefixErrorMessage(),
+      });
+      return;
+    }
+    if (data.plan && data.plan !== plan) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["carnet"],
+        message: "El carnet no corresponde al plan seleccionado",
+      });
+    }
+  })
+  .transform((data) => {
+    if (!data.carnet) return data;
+    const plan = getPlanFromCarnet(data.carnet)!;
+    return { ...data, plan };
+  });
+
+export const scanTicketSchema = z.object({
+  ticket_number: z
+    .string()
+    .trim()
+    .min(1, "Código QR inválido")
+    .max(64, "Código demasiado largo")
+    .refine(
+      (val) => /TKT-[A-Z0-9]{6,12}/i.test(val),
+      "Formato inválido. Debe ser TKT-XXXXXXXXXX"
+    ),
+});
+
+export const studentIdSchema = z.string().uuid("ID de estudiante inválido");
+
+export const studentStatusFilterSchema = z
+  .enum(["pending", "confirmed", "cancelled"])
+  .optional();
 
 export type CreateStudentSchemaInput = z.infer<typeof createStudentSchema>;
+export type CreateDocenteSchemaInput = z.infer<typeof createDocenteSchema>;
+export type CreateParticipantSchemaInput = z.infer<typeof createParticipantSchema>;
 export type UpdateStudentSchemaInput = z.infer<typeof updateStudentSchema>;
 
 export function formatZodError(error: z.ZodError): string {

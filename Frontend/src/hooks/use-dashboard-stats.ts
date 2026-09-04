@@ -6,7 +6,9 @@ import type { DashboardStats } from "@/types";
 
 const emptyStats: DashboardStats = {
   totalStudents: 0,
+  totalTeachers: 0,
   ticketsSent: 0,
+  ticketsGenerated: 0,
   cyclesRegistered: 0,
   emailsSent: 0,
   confirmedParticipants: 0,

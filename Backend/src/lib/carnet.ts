@@ -1,4 +1,5 @@
 /** Formato: 4 dígitos · 2 dígitos · 4–6 dígitos */
+import { VALID_CARNET_PREFIXES, getPlanFromCarnet } from "./plan.js";
 
 export function stripCarnetDigits(value: string): string {
   return value.replace(/\D/g, "");
@@ -20,9 +21,14 @@ export function isValidCarnet(value: string): boolean {
   const digits = stripCarnetDigits(value);
   if (digits.length < 10 || digits.length > 12) return false;
   const thirdLength = digits.length - 6;
-  return thirdLength >= 4 && thirdLength <= 6;
+  if (thirdLength < 4 || thirdLength > 6) return false;
+  return getPlanFromCarnet(digits) !== null;
 }
 
 export function normalizeCarnet(value: string): string {
   return formatCarnet(value);
+}
+
+export function carnetPrefixErrorMessage(): string {
+  return `Los primeros 4 dígitos deben ser ${VALID_CARNET_PREFIXES.join(" o ")}`;
 }

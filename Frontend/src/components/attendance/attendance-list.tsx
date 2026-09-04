@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { UserCheck, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { displayCarnet } from "@/lib/carnet";
-import { formatDate, getCicloLabel } from "@/lib/utils";
+import { formatDate, getCicloLabel, getParticipantTypeLabel } from "@/lib/utils";
 import type { StudentWithTicket } from "@/types";
 
 interface AttendanceListProps {
@@ -38,7 +38,9 @@ export function AttendanceList({ students, loading }: AttendanceListProps) {
   return (
     <ul className="divide-y divide-border">
       <AnimatePresence initial={false}>
-        {students.map((student) => (
+        {students.map((student) => {
+          const isDocente = student.participant_type === "docente";
+          return (
           <motion.li
             key={student.id}
             layout
@@ -48,21 +50,41 @@ export function AttendanceList({ students, loading }: AttendanceListProps) {
             className="flex items-center justify-between gap-3 py-3"
           >
             <div className="min-w-0 flex-1">
-              <p className="truncate font-medium">{student.full_name}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="truncate font-medium">{student.full_name}</p>
+                <Badge variant={isDocente ? "secondary" : "outline"} className="text-[10px]">
+                  {getParticipantTypeLabel(student.participant_type)}
+                </Badge>
+              </div>
               <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                <span>{displayCarnet(student.carnet)}</span>
-                <span>·</span>
-                <span>{getCicloLabel(student.ciclo)}</span>
+                {isDocente ? (
+                  <>
+                    <span>{student.email}</span>
+                    {student.ticket?.ticket_number && (
+                      <>
+                        <span>·</span>
+                        <span className="font-mono">{student.ticket.ticket_number}</span>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <span>{displayCarnet(student.carnet)}</span>
+                    <span>·</span>
+                    <span>{getCicloLabel(student.ciclo)}</span>
+                  </>
+                )}
               </div>
             </div>
             <div className="shrink-0 text-right">
-              <Badge variant="success">Confirmado</Badge>
+              <Badge variant="success">Entrada confirmada</Badge>
               <p className="mt-1 text-[11px] text-muted-foreground">
                 {formatDate(student.checked_in_at ?? student.updated_at)}
               </p>
             </div>
           </motion.li>
-        ))}
+          );
+        })}
       </AnimatePresence>
     </ul>
   );
@@ -127,7 +149,7 @@ export function AttendanceCounter({
         className="rounded-2xl border border-border bg-card p-5 glass-card"
       >
         <div className="flex items-center justify-between">
-          <p className="text-sm font-medium text-muted-foreground">Pendientes</p>
+          <p className="text-sm font-medium text-muted-foreground">Por confirmar entrada</p>
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-warning/10">
             <Users className="h-4.5 w-4.5 text-warning" />
           </div>

@@ -15,13 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { CICLOS } from "@/lib/constants";
 import { cn, getCicloLabel } from "@/lib/utils";
 import { api } from "@/lib/api";
+import { getPlanFromCarnet } from "@/lib/plans";
 import {
   canAccessField,
+  sanitizePersonName,
   studentFormSchema,
   type StudentFormValues,
 } from "@/lib/validation";
@@ -55,19 +56,24 @@ export function RegisterStudentForm() {
 
   async function onSubmit(data: StudentFormValues) {
     try {
+      const plan = getPlanFromCarnet(data.carnet);
+      if (!plan) {
+        toast.error("Prefijo de carnet inválido");
+        return;
+      }
+
       const result = await api.createStudent({
         ...data,
         ciclo: Number(data.ciclo) as 2 | 4 | 6 | 8 | 10,
+        plan,
       });
 
       if (result.ticket?.status === "failed") {
-        toast.warning("Registrado — correo pendiente", {
-          description: "Reenvía el ticket desde Estudiantes.",
-        });
+        toast.warning("Registrado. El correo no se envió.");
       } else {
         toast.success("Estudiante registrado");
       }
-      router.push("/estudiantes");
+      router.push(`/estudiantes?plan=${plan}`);
     } catch (err) {
       toast.error("No se pudo registrar", {
         description: err instanceof Error ? err.message : undefined,
@@ -81,28 +87,31 @@ export function RegisterStudentForm() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.25 }}
     >
-      <Card className="mx-auto max-w-2xl glass-card">
-        <CardHeader className="pb-4">
-          <CardTitle>Nuevo registro</CardTitle>
-        </CardHeader>
-        <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
             <div className="space-y-2">
               <Label htmlFor="full_name">Nombre completo</Label>
               <Input
                 id="full_name"
-                placeholder="María González"
+                placeholder="Ej.: Ana López"
                 aria-invalid={!!errors.full_name}
                 aria-describedby={
                   errors.full_name ? fieldErrorId("full_name") : undefined
                 }
+                autoComplete="name"
                 {...register("full_name", {
+                  onChange: (e) => {
+                    const sanitized = sanitizePersonName(e.target.value);
+                    if (sanitized !== e.target.value) {
+                      e.target.value = sanitized;
+                    }
+                    setValue("full_name", sanitized, { shouldValidate: true });
+                  },
                   onBlur: async (e) => {
-                    const capitalized = e.target.value
+                    const capitalized = sanitizePersonName(e.target.value)
                       .trim()
                       .replace(/\s+/g, " ")
                       .split(" ")
@@ -133,7 +142,7 @@ export function RegisterStudentForm() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="correo@universidad.edu"
+                  placeholder="Ej.: correo@umg.edu.gt"
                   disabled={!canEmail}
                   className={cn(!canEmail && "opacity-50")}
                   aria-invalid={!!errors.email}
@@ -164,7 +173,7 @@ export function RegisterStudentForm() {
                 <Input
                   id="phone"
                   inputMode="numeric"
-                  placeholder="12345678"
+                  placeholder="8 dígitos"
                   maxLength={8}
                   disabled={!canPhone}
                   className={cn(!canPhone && "opacity-50")}
@@ -193,7 +202,7 @@ export function RegisterStudentForm() {
 
             <div className="grid gap-5 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="carnet-seg-0">Carnet</Label>
+                <Label htmlFor="carnet-prefix">Carnet</Label>
                 <CarnetInput
                   id="carnet"
                   value={values.carnet ?? ""}
@@ -279,8 +288,6 @@ export function RegisterStudentForm() {
               </Button>
             </div>
           </form>
-        </CardContent>
-      </Card>
     </motion.div>
   );
 }

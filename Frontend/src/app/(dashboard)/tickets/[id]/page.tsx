@@ -20,7 +20,10 @@ export default function TicketDetailPage() {
       setLoading(true);
       setError(null);
       try {
-        const data = await api.getStudent(id);
+        let data = await api.getStudent(id);
+        if (!data.ticket?.qr_code) {
+          data = await api.issueTicket(id);
+        }
         setStudent(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Ticket no encontrado");
@@ -54,7 +57,7 @@ export default function TicketDetailPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold tracking-tight text-center">Ticket</h1>
-      <TicketView student={student} />
+      <TicketView student={student} onUpdated={setStudent} />
     </div>
   );
 }

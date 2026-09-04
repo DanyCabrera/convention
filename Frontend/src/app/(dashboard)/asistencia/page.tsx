@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/lib/api";
+import { ticketNumberSchema } from "@/lib/validation";
 import type { AttendanceResponse } from "@/types";
 
 export default function AsistenciaPage() {
@@ -27,6 +28,7 @@ export default function AsistenciaPage() {
   const [processing, setProcessing] = useState(false);
   const processingRef = useRef(false);
   const [manualTicket, setManualTicket] = useState("");
+  const [manualError, setManualError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -58,11 +60,15 @@ export default function AsistenciaPage() {
 
         if (result.alreadyConfirmed) {
           toast.info("Ya confirmado", {
-            description: result.student.full_name,
+            description: `${result.student.full_name} · ${
+              result.student.participant_type === "docente" ? "Docente" : "Estudiante"
+            }`,
           });
         } else {
           toast.success("Entrada confirmada", {
-            description: result.student.full_name,
+            description: `${result.student.full_name} · ${
+              result.student.participant_type === "docente" ? "Docente" : "Estudiante"
+            }`,
           });
         }
 
@@ -90,7 +96,13 @@ export default function AsistenciaPage() {
         className="flex items-center justify-between gap-4"
       >
         <h1 className="text-2xl font-bold tracking-tight">Asistencia</h1>
-        <Button variant="outline" size="sm" onClick={refresh} disabled={loading}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={refresh}
+          disabled={loading}
+          aria-label="Actualizar asistencia"
+        >
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
         </Button>
       </motion.div>
@@ -108,13 +120,16 @@ export default function AsistenciaPage() {
                 <ScanLine className="h-4 w-4 text-primary" />
                 Escanear QR
               </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Válido con cualquier ticket generado; el envío por correo es opcional.
+              </p>
             </CardHeader>
             <CardContent className="space-y-4">
               {scanning ? (
                 <QrScanner onScan={confirmTicket} paused={processing} />
               ) : (
                 <div className="flex aspect-square items-center justify-center rounded-2xl bg-muted/50">
-                  <p className="text-sm text-muted-foreground">Cámara off</p>
+                  <p className="text-sm text-muted-foreground">Cámara desactivada</p>
                 </div>
               )}
               <Button
@@ -142,14 +157,35 @@ export default function AsistenciaPage() {
                   id="manual-ticket"
                   placeholder="TKT-XXXXXXXX"
                   value={manualTicket}
-                  onChange={(e) => setManualTicket(e.target.value.toUpperCase())}
+                  onChange={(e) => {
+                    setManualTicket(e.target.value.toUpperCase());
+                    setManualError(null);
+                  }}
                   disabled={processing}
+                  aria-invalid={!!manualError}
+                  aria-describedby={manualError ? "manual-ticket-error" : undefined}
                 />
+                {manualError && (
+                  <p
+                    id="manual-ticket-error"
+                    className="text-xs text-destructive"
+                    role="alert"
+                  >
+                    {manualError}
+                  </p>
+                )}
               </div>
               <Button
                 className="w-full"
                 disabled={processing || !manualTicket.trim()}
-                onClick={() => confirmTicket(manualTicket)}
+                onClick={() => {
+                  const parsed = ticketNumberSchema.safeParse(manualTicket);
+                  if (!parsed.success) {
+                    setManualError(parsed.error.errors[0]?.message ?? "Ticket inválido");
+                    return;
+                  }
+                  confirmTicket(parsed.data);
+                }}
               >
                 Confirmar
               </Button>

@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
@@ -17,6 +20,7 @@
     "nodemailer": "^9.0.3",
     "qrcode": "^1.5.4",
     "resend": "^6.18.1",
+    "sharp": "^0.35.3",
     "uuid": "^11.1.0",
     "zod": "^3.24.2"
   },

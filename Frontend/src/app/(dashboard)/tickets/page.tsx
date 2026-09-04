@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useStudents } from "@/hooks/use-students";
-import { formatDate, getStatusLabel } from "@/lib/utils";
+import { formatDate, getParticipantTypeLabel, getStatusLabel } from "@/lib/utils";
 
 export default function TicketsPage() {
   const { data: students, loading, error, refresh } = useStudents();
@@ -33,6 +33,9 @@ export default function TicketsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Tickets</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Estudiantes y docentes
+        </p>
       </div>
 
       {loading ? (
@@ -77,6 +80,16 @@ export default function TicketsPage() {
                       {student.ticket?.ticket_number}
                     </p>
                     <p className="mt-1 font-semibold">{student.full_name}</p>
+                    <Badge
+                      variant={
+                        student.participant_type === "docente"
+                          ? "secondary"
+                          : "outline"
+                      }
+                      className="mt-1 text-[10px]"
+                    >
+                      {getParticipantTypeLabel(student.participant_type)}
+                    </Badge>
                     <p className="mt-0.5 text-xs text-muted-foreground">
                       {formatDate(student.registered_at)}
                     </p>

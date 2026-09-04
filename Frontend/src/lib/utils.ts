@@ -23,19 +23,34 @@ export function formatShortDate(date: string): string {
   }).format(new Date(date));
 }
 
-export function getCicloLabel(ciclo: number): string {
-  return `Ciclo ${ciclo}`;
+export function getCicloLabel(ciclo: number | null | undefined): string {
+  if (!ciclo) return "—";
+  const labels: Record<number, string> = {
+    2: "Segundo Ciclo",
+    4: "Cuarto Ciclo",
+    6: "Sexto Ciclo",
+    8: "Octavo Ciclo",
+    10: "Décimo Ciclo",
+  };
+  return labels[ciclo] ?? `Ciclo ${ciclo}`;
 }
 
 export function getStatusLabel(status: string): string {
   const labels: Record<string, string> = {
-    pending: "Pendiente",
-    confirmed: "Confirmado",
-    cancelled: "Cancelado",
+    pending: "Sin confirmar entrada",
+    confirmed: "Entrada confirmada",
+    cancelled: "Registro cancelado",
     generated: "Generado",
-    sent: "Enviado",
-    delivered: "Entregado",
-    failed: "Fallido",
+    sent: "Correo enviado",
+    delivered: "Correo entregado",
+    failed: "Correo no enviado",
   };
   return labels[status] ?? status;
+}
+
+export function getParticipantTypeLabel(
+  type: "estudiante" | "docente" | undefined
+): string {
+  if (type === "docente") return "Docente";
+  return "Estudiante";
 }

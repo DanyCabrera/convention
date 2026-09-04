@@ -2,13 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, KeyboardEvent } from "react";
-import { Calendar, Menu, Search } from "lucide-react";
+import { Calendar, Menu, Search, Settings } from "lucide-react";
 import Link from "next/link";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEvent } from "@/hooks/use-event";
 import { formatShortDate } from "@/lib/utils";
+import { AppLogo } from "@/components/layout/app-logo";
 
 interface NavbarProps {
   onMenuClick?: () => void;
@@ -50,7 +50,10 @@ export function Navbar({ onMenuClick }: NavbarProps) {
         <Menu className="h-5 w-5" />
       </Button>
 
-      <div className="hidden min-w-0 flex-1 items-center gap-6 md:flex">
+      <AppLogo size={32} className="shrink-0 md:hidden" />
+
+      <div className="hidden min-w-0 flex-1 items-center gap-3 md:flex">
+        <AppLogo size={32} className="lg:hidden" />
         <div className="min-w-0">
           <h1 className="truncate text-sm font-semibold">{event.name}</h1>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -67,21 +70,19 @@ export function Navbar({ onMenuClick }: NavbarProps) {
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           name="search"
-          placeholder="Buscar..."
+          placeholder="Buscar por nombre, correo o ticket..."
           onKeyDown={onSearchKeyDown}
           className="pl-9 bg-muted/50 border-transparent focus-visible:bg-card"
-          aria-label="Buscar estudiantes"
+          aria-label="Buscar participantes"
         />
       </form>
 
       <Link
         href="/configuracion"
-        className="flex items-center gap-2 rounded-xl p-1.5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        aria-label="Configuración"
+        className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        aria-label="Información del evento"
       >
-        <Avatar className="h-8 w-8">
-          <AvatarFallback>AD</AvatarFallback>
-        </Avatar>
+        <Settings className="h-5 w-5" />
       </Link>
     </header>
   );

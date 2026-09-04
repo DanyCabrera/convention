@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   useReactTable,
@@ -21,6 +21,7 @@ import {
   MoreHorizontal,
   Pencil,
   Trash2,
+  UserX,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,9 +40,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CICLO_OPTIONS, STATUS_OPTIONS } from "@/lib/constants";
+import { CICLO_OPTIONS, PLAN_OPTIONS, STATUS_OPTIONS } from "@/lib/constants";
 import { displayCarnet, stripCarnetDigits } from "@/lib/carnet";
-import { formatDate, getCicloLabel, getStatusLabel } from "@/lib/utils";
+import { getPlanFromCarnet, getPlanLabel, type Plan } from "@/lib/plans";
+import { formatDate, getCicloLabel, getParticipantTypeLabel, getStatusLabel } from "@/lib/utils";
 import type { StudentWithTicket } from "@/types";
 
 interface StudentsTableProps {
@@ -49,9 +51,13 @@ interface StudentsTableProps {
   onDelete?: (id: string) => void;
   onResend?: (id: string) => void;
   onEdit?: (student: StudentWithTicket) => void;
+  onCancel?: (id: string) => void;
   loading?: boolean;
   compact?: boolean;
   initialSearch?: string;
+  initialPlan?: Plan | "all";
+  hidePlanFilter?: boolean;
+  onFilteredChange?: (students: StudentWithTicket[]) => void;
 }
 
 function getStatusVariant(
@@ -69,14 +75,31 @@ function getStatusVariant(
   }
 }
 
-export function StudentsTable({ data, onDelete, onResend, onEdit, loading, compact, initialSearch = "" }: StudentsTableProps) {
+export function StudentsTable({
+  data,
+  onDelete,
+  onResend,
+  onEdit,
+  onCancel,
+  loading,
+  compact,
+  initialSearch = "",
+  initialPlan = "all",
+  hidePlanFilter,
+  onFilteredChange,
+}: StudentsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState(initialSearch);
+  const [planFilter, setPlanFilter] = useState<string>(initialPlan);
   const [cicloFilter, setCicloFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
   const filteredData = useMemo(() => {
     return data.filter((student) => {
+      const studentPlan =
+        student.plan ?? (student.carnet ? getPlanFromCarnet(student.carnet) : null) ?? null;
+      const matchesPlan =
+        planFilter === "all" || studentPlan === planFilter;
       const matchesCiclo =
         cicloFilter === "all" || student.ciclo === Number(cicloFilter);
       const matchesStatus =
@@ -87,12 +110,17 @@ export function StudentsTable({ data, onDelete, onResend, onEdit, loading, compa
         !globalFilter ||
         student.full_name.toLowerCase().includes(q) ||
         student.email.toLowerCase().includes(q) ||
-        displayCarnet(student.carnet).includes(q) ||
-        stripCarnetDigits(student.carnet).includes(qDigits) ||
+        (student.carnet &&
+          (displayCarnet(student.carnet).includes(q) ||
+            stripCarnetDigits(student.carnet).includes(qDigits))) ||
         student.ticket?.ticket_number.toLowerCase().includes(q);
-      return matchesCiclo && matchesStatus && matchesSearch;
+      return matchesPlan && matchesCiclo && matchesStatus && matchesSearch;
     });
-  }, [data, cicloFilter, statusFilter, globalFilter]);
+  }, [data, planFilter, cicloFilter, statusFilter, globalFilter]);
+
+  useEffect(() => {
+    onFilteredChange?.(filteredData);
+  }, [filteredData, onFilteredChange]);
 
   const columns = useMemo<ColumnDef<StudentWithTicket>[]>(() => {
     const cols: ColumnDef<StudentWithTicket>[] = [
@@ -119,7 +147,19 @@ export function StudentsTable({ data, onDelete, onResend, onEdit, loading, compa
           </Button>
         ),
         cell: ({ row }) => (
-          <span className="font-medium">{row.original.full_name}</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-medium">{row.original.full_name}</span>
+            <Badge
+              variant={
+                row.original.participant_type === "docente"
+                  ? "secondary"
+                  : "outline"
+              }
+              className="text-[10px]"
+            >
+              {getParticipantTypeLabel(row.original.participant_type)}
+            </Badge>
+          </div>
         ),
       },
       {
@@ -143,6 +183,20 @@ export function StudentsTable({ data, onDelete, onResend, onEdit, loading, compa
         header: "Teléfono",
         cell: ({ row }) => (
           <span className="hidden lg:inline">{row.original.phone}</span>
+        ),
+      },
+      {
+        accessorKey: "plan",
+        header: "Plan",
+        cell: ({ row }) => (
+          <Badge variant="secondary" className="font-normal">
+            {getPlanLabel(
+              row.original.plan ??
+                (row.original.carnet
+                  ? getPlanFromCarnet(row.original.carnet)
+                  : null)
+            )}
+          </Badge>
         ),
       },
       {
@@ -176,7 +230,10 @@ export function StudentsTable({ data, onDelete, onResend, onEdit, loading, compa
         cell: ({ row }) =>
           compact ? (
             <Button variant="ghost" size="sm" asChild>
-              <Link href={`/tickets/${row.original.id}`}>
+              <Link
+                href={`/tickets/${row.original.id}`}
+                aria-label={`Ver ticket de ${row.original.full_name}`}
+              >
                 <Eye className="h-4 w-4" />
               </Link>
             </Button>
@@ -201,8 +258,14 @@ export function StudentsTable({ data, onDelete, onResend, onEdit, loading, compa
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onResend?.(row.original.id)}>
                   <Mail className="mr-2 h-4 w-4" />
-                  Reenviar
+                  Enviar por correo
                 </DropdownMenuItem>
+                {row.original.status !== "cancelled" && onCancel && (
+                  <DropdownMenuItem onClick={() => onCancel(row.original.id)}>
+                    <UserX className="mr-2 h-4 w-4" />
+                    Cancelar registro
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
@@ -218,7 +281,7 @@ export function StudentsTable({ data, onDelete, onResend, onEdit, loading, compa
     ];
 
     return cols;
-  }, [onDelete, onResend, onEdit, compact]);
+  }, [onDelete, onResend, onEdit, onCancel, compact]);
 
   const table = useReactTable({
     data: filteredData,
@@ -237,11 +300,25 @@ export function StudentsTable({ data, onDelete, onResend, onEdit, loading, compa
       {!compact && (
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <Input
-          placeholder="Buscar por nombre, correo o carnet..."
+          placeholder="Buscar por nombre, correo, carnet o ticket..."
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
           className="max-w-sm bg-muted/50"
         />
+        {!hidePlanFilter && (
+          <Select value={planFilter} onValueChange={setPlanFilter}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Plan" />
+            </SelectTrigger>
+            <SelectContent>
+              {PLAN_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <Select value={cicloFilter} onValueChange={setCicloFilter}>
           <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="Ciclo" />
@@ -332,6 +409,7 @@ export function StudentsTable({ data, onDelete, onResend, onEdit, loading, compa
               size="sm"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
+              aria-label="Página anterior"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -344,6 +422,7 @@ export function StudentsTable({ data, onDelete, onResend, onEdit, loading, compa
               size="sm"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
+              aria-label="Página siguiente"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>

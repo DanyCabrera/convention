@@ -9,6 +9,7 @@ interface StatCardProps {
   title: string;
   value: number | string;
   growth?: number;
+  description?: string;
   icon: LucideIcon;
   index?: number;
 }
@@ -17,6 +18,7 @@ export function StatCard({
   title,
   value,
   growth,
+  description,
   icon: Icon,
   index = 0,
 }: StatCardProps) {
@@ -28,9 +30,10 @@ export function StatCard({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.08 }}
+      className="h-full"
     >
-      <Card className="glass-card overflow-hidden transition-shadow hover:shadow-md">
-        <CardContent className="p-5">
+      <Card className="glass-card h-full overflow-hidden transition-shadow hover:shadow-md">
+        <CardContent className="flex h-full flex-col p-5">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">{title}</p>
@@ -40,24 +43,31 @@ export function StatCard({
               <Icon className="h-5 w-5 text-primary" />
             </div>
           </div>
-          {showGrowth && (
-            <div className="mt-3 flex items-center gap-1.5">
-              {isPositive ? (
-                <TrendingUp className="h-3.5 w-3.5 text-success" />
-              ) : (
-                <TrendingDown className="h-3.5 w-3.5 text-destructive" />
-              )}
-              <span
-                className={cn(
-                  "text-xs font-medium",
-                  isPositive ? "text-success" : "text-destructive"
+          <div className="mt-auto pt-3">
+            {showGrowth ? (
+              <div className="flex items-center gap-1.5">
+                {isPositive ? (
+                  <TrendingUp className="h-3.5 w-3.5 text-success" />
+                ) : (
+                  <TrendingDown className="h-3.5 w-3.5 text-destructive" />
                 )}
-              >
-                {isPositive ? "+" : ""}
-                {growth}%
-              </span>
-            </div>
-          )}
+                <span
+                  className={cn(
+                    "text-xs font-medium",
+                    isPositive ? "text-success" : "text-destructive"
+                  )}
+                >
+                  {isPositive ? "+" : ""}
+                  {growth}%
+                </span>
+                <span className="text-xs text-muted-foreground">vs mes anterior</span>
+              </div>
+            ) : description ? (
+              <p className="text-xs text-muted-foreground">{description}</p>
+            ) : (
+              <p className="text-xs text-muted-foreground">&nbsp;</p>
+            )}
+          </div>
         </CardContent>
       </Card>
     </motion.div>

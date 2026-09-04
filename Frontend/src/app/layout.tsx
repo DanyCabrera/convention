@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { APP_LOGO_SRC } from "@/lib/constants";
 import "./globals.css";
 
 const inter = Inter({
@@ -12,7 +13,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "UMG 2026",
   description:
-    "Plataforma premium para registro de estudiantes, tickets digitales y gestión de eventos universitarios.",
+    "Registro de estudiantes y docentes, tickets con QR y control de asistencia — UMG 2026.",
+  icons: {
+    icon: APP_LOGO_SRC,
+    apple: APP_LOGO_SRC,
+  },
 };
 
 export default function RootLayout({

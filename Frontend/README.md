@@ -22,10 +22,9 @@ src/
 │   ├── layout/          # Sidebar, Navbar
 │   ├── dashboard/       # Stat cards
 │   ├── students/        # Tabla y formulario
-│   ├── tickets/         # Vista VIP
+│   ├── tickets/         # Vista de ticket
 │   ├── cycles/          # Cards por ciclo
 │   └── reports/         # Gráficos Recharts
-├── data/                # Mock data
 ├── lib/                 # API, utils, constants
 └── types/
 ```

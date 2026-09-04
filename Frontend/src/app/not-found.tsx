@@ -10,7 +10,7 @@ export default function NotFound() {
         El recurso que buscas no existe o fue movido.
       </p>
       <Button asChild>
-        <Link href="/">Volver al dashboard</Link>
+        <Link href="/">Volver al inicio</Link>
       </Button>
     </div>
   );

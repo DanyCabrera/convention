@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { formatCarnet, isValidCarnet } from "./carnet";
+import { VALID_CARNET_PREFIXES } from "./plans";
 
 export function capitalizeWords(value: string): string {
   return value
@@ -8,6 +9,13 @@ export function capitalizeWords(value: string): string {
     .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
+}
+
+/** Solo letras (incl. acentos) y espacios — bloquea números y símbolos al escribir */
+export function sanitizePersonName(value: string): string {
+  return value
+    .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, "")
+    .replace(/^\s+/, "");
 }
 
 export const studentFormSchema = z.object({
@@ -40,7 +48,7 @@ export const studentFormSchema = z.object({
     .string()
     .trim()
     .refine(isValidCarnet, {
-      message: "Formato: 4-2-4/5/6 dígitos",
+      message: `Formato: 4-2-4/5/6 dígitos. Prefijo ${VALID_CARNET_PREFIXES.join(" o ")}`,
     })
     .transform(formatCarnet),
   ciclo: z.enum(["2", "4", "6", "8", "10"], {
@@ -48,7 +56,45 @@ export const studentFormSchema = z.object({
   }),
 });
 
+export const ticketNumberSchema = z
+  .string()
+  .trim()
+  .min(1, "Ingresa el número de ticket")
+  .max(64, "Código demasiado largo")
+  .refine(
+    (val) => /TKT-[A-Z0-9]{6,12}/i.test(val),
+    "Formato inválido. Ejemplo: TKT-ABC1234567"
+  );
+
 export type StudentFormValues = z.infer<typeof studentFormSchema>;
+
+export const teacherFormSchema = z.object({
+  full_name: studentFormSchema.shape.full_name,
+  email: studentFormSchema.shape.email,
+});
+
+export type TeacherFormValues = z.infer<typeof teacherFormSchema>;
+
+export const TEACHER_FIELD_ORDER: (keyof TeacherFormValues)[] = [
+  "full_name",
+  "email",
+];
+
+export function canAccessTeacherField(
+  field: keyof TeacherFormValues,
+  values: Partial<TeacherFormValues>,
+  errors: Partial<Record<keyof TeacherFormValues, { message?: string }>>
+): boolean {
+  const index = TEACHER_FIELD_ORDER.indexOf(field);
+  for (let i = 0; i < index; i++) {
+    const key = TEACHER_FIELD_ORDER[i];
+    if (errors[key]) return false;
+    const fieldSchema = teacherFormSchema.shape[key];
+    const result = fieldSchema.safeParse(values[key]);
+    if (!result.success) return false;
+  }
+  return true;
+}
 
 export const FIELD_ORDER: (keyof StudentFormValues)[] = [
   "full_name",

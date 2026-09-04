@@ -1,6 +1,5 @@
 "use client";
 
-import { Palette } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEvent } from "@/hooks/use-event";
 import { formatShortDate } from "@/lib/utils";
@@ -11,20 +10,23 @@ export default function ConfiguracionPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">Configuración</h1>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Información del evento</h1>
+      </div>
 
       <Card className="glass-card max-w-lg">
         <CardHeader className="pb-3">
-          <div className="flex items-center gap-2">
-            <Palette className="h-4 w-4 text-primary" />
-            <CardTitle className="text-base">Evento</CardTitle>
-          </div>
+          <CardTitle className="text-base">Datos del evento</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
           {!event.name ? (
             <Skeleton className="h-24 w-full" />
           ) : (
             <>
+              <div>
+                <p className="text-muted-foreground">Universidad</p>
+                <p className="font-medium">{event.university}</p>
+              </div>
               <div>
                 <p className="text-muted-foreground">Nombre</p>
                 <p className="font-medium">{event.name}</p>

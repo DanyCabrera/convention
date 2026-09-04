@@ -12,12 +12,13 @@ import {
   BarChart3,
   Settings,
   ScanLine,
-  Sparkles,
   X,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatShortDate } from "@/lib/utils";
 import { NAV_ITEMS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
+import { AppLogo } from "@/components/layout/app-logo";
+import { useEvent } from "@/hooks/use-event";
 
 const iconMap = {
   LayoutDashboard,
@@ -37,6 +38,7 @@ interface SidebarProps {
 
 export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const { event } = useEvent();
 
   return (
     <>
@@ -56,12 +58,10 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       >
         <div className="flex h-[var(--navbar-height)] items-center justify-between border-b border-border px-5">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary shadow-sm">
-              <Sparkles className="h-4.5 w-4.5 text-white" />
-            </div>
+            <AppLogo size={36} priority />
             <div>
-              <p className="text-sm font-semibold leading-tight">UMG 2026</p>
-              <p className="text-[11px] text-muted-foreground">Event Manager</p>
+              <p className="text-sm font-semibold leading-tight">{event.name}</p>
+              <p className="text-[11px] text-muted-foreground">Gestión del evento</p>
             </div>
           </Link>
           <Button
@@ -75,7 +75,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           </Button>
         </div>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto p-3">
+        <nav className="flex-1 space-y-1 overflow-y-auto p-3" aria-label="Menú principal">
           {NAV_ITEMS.map((item) => {
             const Icon = iconMap[item.icon as keyof typeof iconMap];
             const isActive =
@@ -104,6 +104,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                       ? "text-primary"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
+                  aria-current={isActive ? "page" : undefined}
                 >
                   <Icon className="h-4.5 w-4.5 shrink-0" />
                   {item.label}
@@ -115,7 +116,13 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
         <div className="border-t border-border p-4">
           <div className="rounded-xl bg-accent/60 px-3 py-2">
-            <p className="text-xs font-medium text-accent-foreground">UMG 2026</p>
+            <p className="text-xs font-medium text-accent-foreground">{event.name}</p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
+              {formatShortDate(event.date)}
+            </p>
+            <p className="mt-0.5 text-[10px] leading-snug text-muted-foreground">
+              {event.location}
+            </p>
           </div>
         </div>
       </aside>

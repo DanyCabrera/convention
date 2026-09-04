@@ -36,35 +36,43 @@ export function ReportsCharts({ stats, cycleStats }: ReportsChartsProps) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold tracking-tight">Reportes</h2>
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight">Reportes</h2>
+      </div>
 
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5"
       >
         <Card className="glass-card">
           <CardContent className="p-5">
-            <p className="text-sm text-muted-foreground">Total</p>
+            <p className="text-sm text-muted-foreground">Estudiantes</p>
             <p className="text-3xl font-bold">{stats.totalStudents}</p>
           </CardContent>
         </Card>
         <Card className="glass-card">
           <CardContent className="p-5">
+            <p className="text-sm text-muted-foreground">Docentes</p>
+            <p className="text-3xl font-bold">{stats.totalTeachers}</p>
+          </CardContent>
+        </Card>
+        <Card className="glass-card">
+          <CardContent className="p-5">
             <p className="text-sm text-muted-foreground">Tickets</p>
-            <p className="text-3xl font-bold">{stats.ticketsSent}</p>
+            <p className="text-3xl font-bold">{stats.ticketsGenerated}</p>
           </CardContent>
         </Card>
         <Card className="glass-card">
           <CardContent className="p-5">
-            <p className="text-sm text-muted-foreground">Confirmados</p>
+            <p className="text-sm text-muted-foreground">Correos enviados</p>
+            <p className="text-3xl font-bold">{stats.emailsSent}</p>
+          </CardContent>
+        </Card>
+        <Card className="glass-card">
+          <CardContent className="p-5">
+            <p className="text-sm text-muted-foreground">Entradas confirmadas</p>
             <p className="text-3xl font-bold">{stats.confirmedParticipants}</p>
-          </CardContent>
-        </Card>
-        <Card className="glass-card">
-          <CardContent className="p-5">
-            <p className="text-sm text-muted-foreground">Ciclos activos</p>
-            <p className="text-3xl font-bold">{stats.cyclesRegistered}</p>
           </CardContent>
         </Card>
       </motion.div>
@@ -72,7 +80,7 @@ export function ReportsCharts({ stats, cycleStats }: ReportsChartsProps) {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="glass-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Por ciclo</CardTitle>
+            <CardTitle className="text-base">Por ciclo (estudiantes)</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={280}>

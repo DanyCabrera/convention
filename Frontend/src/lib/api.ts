@@ -1,29 +1,59 @@
 import type {
   AttendanceResponse,
   CreateStudentInput,
+  CreateDocenteInput,
   CycleStats,
   DashboardStats,
   EventInfo,
+  ParticipantType,
+  PlanStats,
+  DocenteStats,
   ScanResult,
   StudentStatus,
   StudentWithTicket,
 } from "@/types";
-import { getApiBaseUrl } from "./api-config";
+import type { Plan } from "@/lib/plans";
+import { getApiBaseUrl, getApiKey } from "./api-config";
+
+function sanitizeUserFacingError(message: string): string {
+  const technical =
+    /\.env|RESEND_API_KEY|SMTP_|SUPABASE_|localhost|process\.env/i.test(
+      message
+    );
+  if (technical) {
+    return "No se pudo completar la acción. Contacta al administrador del sistema.";
+  }
+  return message;
+}
 
 function parseApiError(body: unknown): string {
   if (!body || typeof body !== "object") return "Error en la solicitud";
   const record = body as { error?: unknown };
-  if (typeof record.error === "string") return record.error;
+  if (typeof record.error === "string") {
+    return sanitizeUserFacingError(record.error);
+  }
   if (record.error && typeof record.error === "object") {
     const flat = record.error as {
       fieldErrors?: Record<string, string[]>;
       formErrors?: string[];
     };
     const fieldMsg = Object.values(flat.fieldErrors ?? {})[0]?.[0];
-    if (fieldMsg) return fieldMsg;
-    if (flat.formErrors?.[0]) return flat.formErrors[0];
+    if (fieldMsg) return sanitizeUserFacingError(fieldMsg);
+    if (flat.formErrors?.[0]) return sanitizeUserFacingError(flat.formErrors[0]);
   }
   return "Error en la solicitud";
+}
+
+function buildHeaders(options?: RequestInit): HeadersInit {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options?.headers as Record<string, string> | undefined),
+  };
+  const apiKey = getApiKey();
+  if (apiKey) {
+    headers["x-api-key"] = apiKey;
+  }
+  return headers;
 }
 
 async function fetchApi<T>(
@@ -32,10 +62,7 @@ async function fetchApi<T>(
 ): Promise<T> {
   const res = await fetch(`${getApiBaseUrl()}${endpoint}`, {
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
+    headers: buildHeaders(options),
   });
 
   if (!res.ok) {
@@ -54,14 +81,18 @@ export const api = {
 
   getStudents: (params?: {
     ciclo?: number;
+    plan?: Plan;
     status?: string;
     search?: string;
+    tipo?: ParticipantType;
   }) => {
     const query = new URLSearchParams();
     if (params?.ciclo) query.set("ciclo", String(params.ciclo));
+    if (params?.plan) query.set("plan", params.plan);
     if (params?.status && params.status !== "all")
       query.set("status", params.status);
     if (params?.search) query.set("search", params.search);
+    if (params?.tipo) query.set("tipo", params.tipo);
     const qs = query.toString();
     return fetchApi<StudentWithTicket[]>(
       `/students${qs ? `?${qs}` : ""}`
@@ -76,6 +107,29 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+
+  createDocente: (data: CreateDocenteInput) =>
+    fetchApi<StudentWithTicket>("/students", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  downloadDocument: async (id: string, filename?: string) => {
+    const res = await fetch(`${getApiBaseUrl()}/students/${id}/document`, {
+      headers: buildHeaders(),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(parseApiError(body));
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename ?? "documento.pdf";
+    link.click();
+    URL.revokeObjectURL(url);
+  },
 
   updateStudent: (
     id: string,
@@ -94,12 +148,26 @@ export const api = {
       method: "POST",
     }),
 
-  getCycleStats: () => fetchApi<CycleStats[]>("/students/cycles"),
+  issueTicket: (id: string) =>
+    fetchApi<StudentWithTicket>(`/students/${id}/issue-ticket`, {
+      method: "POST",
+    }),
 
-  getCycleStudents: (ciclo: number) =>
-    fetchApi<{ students: StudentWithTicket[]; stats: CycleStats }>(
-      `/students/cycles/${ciclo}`
-    ),
+  getPlanStats: () => fetchApi<PlanStats[]>("/students/plans"),
+
+  getDocenteStats: () => fetchApi<DocenteStats>("/students/docentes/stats"),
+
+  getCycleStats: (plan?: Plan) => {
+    const qs = plan ? `?plan=${plan}` : "";
+    return fetchApi<CycleStats[]>(`/students/cycles${qs}`);
+  },
+
+  getCycleStudents: (ciclo: number, plan?: Plan) => {
+    const qs = plan ? `?plan=${plan}` : "";
+    return fetchApi<{ students: StudentWithTicket[]; stats: CycleStats }>(
+      `/students/cycles/${ciclo}${qs}`
+    );
+  },
 
   scanTicket: (ticket_number: string) =>
     fetchApi<ScanResult>("/students/scan", {

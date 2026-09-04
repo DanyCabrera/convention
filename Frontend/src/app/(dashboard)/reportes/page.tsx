@@ -1,14 +1,23 @@
 "use client";
 
+import { useMemo } from "react";
 import { ReportsCharts } from "@/components/reports/reports-charts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardStats } from "@/hooks/use-dashboard-stats";
-import { useCycleStats } from "@/hooks/use-cycle-stats";
+import {
+  aggregateCycleStatsByCiclo,
+  useCycleStats,
+} from "@/hooks/use-cycle-stats";
 
 export default function ReportesPage() {
   const { stats, loading: statsLoading, error: statsError } = useDashboardStats();
   const { data: cycleStats, loading: cyclesLoading, error: cyclesError } =
     useCycleStats();
+
+  const aggregated = useMemo(
+    () => aggregateCycleStatsByCiclo(cycleStats),
+    [cycleStats]
+  );
 
   if (statsLoading || cyclesLoading) {
     return (
@@ -30,5 +39,5 @@ export default function ReportesPage() {
     );
   }
 
-  return <ReportsCharts stats={stats} cycleStats={cycleStats} />;
+  return <ReportsCharts stats={stats} cycleStats={aggregated} />;
 }

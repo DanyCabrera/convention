@@ -29,6 +29,8 @@ convention/
    - `002_add_checked_in_at.sql`
    - `003_unique_phone_name.sql`
    - `004_drop_full_name_unique.sql`
+   - `005_add_student_plan.sql`
+   - `006_add_participant_type.sql`
 3. Copia de **Settings → API**:
    - `SUPABASE_URL`
    - `service_role` key → `SUPABASE_SECRET_KEY` (o `SUPABASE_SERVICE_ROLE_KEY`)
@@ -51,9 +53,11 @@ SUPABASE_URL=https://tu-proyecto.supabase.co
 SUPABASE_SECRET_KEY=sb_secret_...
 
 CORS_ORIGIN=http://localhost:3000
+API_KEY=
 EVENT_NAME=UMG 2026
-EVENT_DATE=2026-08-15
-EVENT_LOCATION=Auditorio Central, Campus Universitario
+EVENT_DATE=2026-10-24
+EVENT_LOCATION=SALON CAMPO DE LA FERIA, SAN FELIPE, RETALHULEU
+EVENT_UNIVERSITY=Universidad Mariano Galvez
 
 # Correo (opcional — sin esto no se envían tickets por email)
 RESEND_API_KEY=re_xxxxxxxx
@@ -116,21 +120,77 @@ Abre **http://localhost:3000**.
 
 ---
 
-## Producción
+## Producción (Railway + Vercel)
 
-```bash
-# Backend
-cd Backend
-npm run build
-npm start
+El repo es un monorepo: **Backend** → Railway, **Frontend** → Vercel.
 
-# Frontend
-cd Frontend
-npm run build
-npm start
+Antes de desplegar, confirma que en Supabase ya corriste las migraciones **001 a 006**.
+
+### 1. Backend en Railway
+
+1. En [railway.app](https://railway.app) → **New project** → **GitHub repo**.
+2. En el servicio: **Settings → Root Directory** = `Backend`.
+3. Railway usa `Backend/railway.json` (`npm run build` + `npm start` + healthcheck `/api/health`).
+4. En **Variables** agrega:
+
+| Variable | Valor |
+|----------|--------|
+| `SUPABASE_URL` | URL del proyecto Supabase |
+| `SUPABASE_SERVICE_ROLE_KEY` | service_role (Settings → API) |
+| `API_KEY` | Clave larga aleatoria (obligatoria en producción) |
+| `CORS_ORIGIN` | URL de Vercel, ej. `https://tu-app.vercel.app` (sin `/` final) |
+| `EVENT_NAME` | `UMG 2026` |
+| `EVENT_DATE` | `2026-10-24` |
+| `EVENT_LOCATION` | `SALON CAMPO DE LA FERIA, SAN FELIPE, RETALHULEU` |
+| `EVENT_UNIVERSITY` | `Universidad Mariano Galvez` |
+| `RESEND_API_KEY` | *(opcional)* para enviar tickets |
+| `EMAIL_FROM` | *(opcional)* `UMG 2026 <noreply@tu-dominio.com>` |
+
+`PORT` lo asigna Railway; no lo definas a mano.
+
+5. Genera un dominio: **Settings → Networking → Generate domain**. Copia la URL, ej. `https://umg-backend.up.railway.app`.
+6. Prueba: `https://TU-BACKEND.up.railway.app/api/health` debe responder `{ "status": "ok", ... }`.
+
+Si aún no tienes la URL de Vercel, deja `CORS_ORIGIN=http://localhost:3000` y actualízalo en el paso 3.
+
+### 2. Frontend en Vercel
+
+1. En [vercel.com](https://vercel.com) → **Add New → Project** → el mismo repo.
+2. **Root Directory** = `Frontend` (Framework: Next.js).
+3. En **Environment Variables** (Production y Preview):
+
+| Variable | Valor |
+|----------|--------|
+| `NEXT_PUBLIC_API_URL` | `https://TU-BACKEND.up.railway.app/api` (sin `/` final) |
+| `NEXT_PUBLIC_API_KEY` | La misma `API_KEY` del backend |
+
+4. Deploy. Copia la URL, ej. `https://tu-app.vercel.app`.
+
+`NEXT_PUBLIC_*` se incrusta en el build: si cambias la URL del backend, vuelve a desplegar el frontend.
+
+### 3. Cerrar el círculo (CORS)
+
+En Railway, actualiza:
+
+```
+CORS_ORIGIN=https://tu-app.vercel.app
 ```
 
-Define las mismas variables de entorno en el servidor de producción.
+Si usas previews de Vercel (`*.vercel.app`), con esa URL ya se aceptan. Redeploy del backend no es necesario: las variables se recargan al reiniciar el servicio.
+
+### 4. Orden recomendado
+
+1. Migraciones Supabase 001–006  
+2. Railway (backend) + dominio + `API_KEY`  
+3. Vercel (frontend) con `NEXT_PUBLIC_API_URL` y `NEXT_PUBLIC_API_KEY`  
+4. `CORS_ORIGIN` en Railway = URL de Vercel  
+5. Abrir el panel y probar registro + health  
+
+### Correo en producción
+
+Resend con `onboarding@resend.dev` solo entrega a tu propia cuenta. Para el evento, verifica un dominio en Resend y usa `EMAIL_FROM=UMG 2026 <noreply@tu-dominio.com>`.
+
+El QR funciona aunque el correo no se envíe.
 
 ---
 
@@ -159,8 +219,8 @@ Define las mismas variables de entorno en el servidor de producción.
 
 ## Módulos del panel
 
-- **Dashboard** — estadísticas generales
-- **Registrar estudiante** — alta con ticket automático
-- **Estudiantes / Tickets** — consulta y reenvío
-- **Asistencia** — escaneo de QR
-- **Ciclos / Reportes** — métricas por ciclo académico
+- **Inicio** — estadísticas de estudiantes y docentes
+- **Registrar** — alta de estudiante o docente con ticket QR
+- **Participantes** — listados, filtros y exportación
+- **Tickets / Asistencia** — consulta y escaneo de QR
+- **Planes y ciclos / Reportes** — métricas y exportaciones
