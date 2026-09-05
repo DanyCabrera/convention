@@ -1,13 +1,16 @@
+import dns from "node:dns";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import studentsRoutes from "./routes/students.routes.js";
-import { getSupabaseConfigStatus } from "./lib/supabase.js";
+import { getSupabaseConfigStatus, probeSupabase } from "./lib/supabase.js";
 import { getEmailConfigStatus } from "./services/email.service.js";
 import { getEventConfig } from "./lib/event-config.js";
 import { requireApiKey } from "./middleware/auth.js";
+
+dns.setDefaultResultOrder("ipv4first");
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
@@ -83,11 +86,17 @@ app.use(
 );
 app.use(express.json());
 
-app.get("/api/health", (_req, res) => {
+app.get("/api/health", async (_req, res) => {
   const event = getEventConfig();
+  const database = supabaseStatus.configured
+    ? await probeSupabase()
+    : { ok: false, error: `Faltan: ${supabaseStatus.missing.join(", ")}` };
+
   res.json({
     status: "ok",
     supabase: supabaseStatus.configured,
+    database: database.ok ? "ok" : "error",
+    databaseError: database.ok ? undefined : database.error,
     email: emailStatus.configured,
     event: event.name,
     timestamp: new Date().toISOString(),

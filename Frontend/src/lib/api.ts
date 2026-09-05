@@ -17,9 +17,7 @@ import { getApiBaseUrl, getApiKey } from "./api-config";
 
 function sanitizeUserFacingError(message: string): string {
   const technical =
-    /\.env|RESEND_API_KEY|SMTP_|SUPABASE_|localhost|process\.env/i.test(
-      message
-    );
+    /\.env|RESEND_API_KEY|SMTP_|localhost|process\.env/i.test(message);
   if (technical) {
     return "No se pudo completar la acción. Contacta al administrador del sistema.";
   }
@@ -28,7 +26,10 @@ function sanitizeUserFacingError(message: string): string {
 
 function parseApiError(body: unknown): string {
   if (!body || typeof body !== "object") return "Error en la solicitud";
-  const record = body as { error?: unknown };
+  const record = body as { error?: unknown; details?: unknown };
+  if (typeof record.details === "string" && record.details.trim()) {
+    return sanitizeUserFacingError(record.details);
+  }
   if (typeof record.error === "string") {
     return sanitizeUserFacingError(record.error);
   }

@@ -15,6 +15,16 @@ import * as studentService from "../services/student.service.js";
 
 const router = Router();
 
+function sendRouteError(
+  res: import("express").Response,
+  fallback: string,
+  error: unknown
+) {
+  console.error(error);
+  const details = error instanceof Error ? error.message : fallback;
+  res.status(500).json({ error: fallback, details });
+}
+
 function parsePlanQuery(value: unknown): Plan | undefined {
   if (typeof value !== "string" || !value || value === "all") return undefined;
   const parsed = planFilterSchema.safeParse(value);
@@ -27,7 +37,7 @@ router.get("/stats", async (_req, res) => {
     res.json(stats);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error al obtener estadísticas" });
+    sendRouteError(res, "Error al obtener estadísticas", error);
   }
 });
 
@@ -37,7 +47,7 @@ router.get("/plans", async (_req, res) => {
     res.json(plans);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error al obtener planes" });
+    sendRouteError(res, "Error al obtener planes", error);
   }
 });
 
@@ -47,7 +57,7 @@ router.get("/docentes/stats", async (_req, res) => {
     res.json(stats);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error al obtener estadísticas de docentes" });
+    sendRouteError(res, "Error al obtener estadísticas de docentes", error);
   }
 });
 
@@ -61,7 +71,7 @@ router.get("/cycles", async (req, res) => {
     res.json(cycles);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error al obtener ciclos" });
+    sendRouteError(res, "Error al obtener ciclos", error);
   }
 });
 
@@ -82,7 +92,7 @@ router.get("/cycles/:ciclo", async (req, res) => {
     res.json({ students, stats });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error al obtener estudiantes del ciclo" });
+    sendRouteError(res, "Error al obtener estudiantes del ciclo", error);
   }
 });
 
@@ -124,7 +134,7 @@ router.get("/", async (req, res) => {
     res.json(students);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error al obtener estudiantes" });
+    sendRouteError(res, "Error al obtener estudiantes", error);
   }
 });
 

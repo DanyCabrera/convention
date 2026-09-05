@@ -547,14 +547,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
-  const [
-    { count: totalStudents },
-    { count: totalTeachers },
-    { data: tickets },
-    { data: participants },
-    { count: recentStudents },
-    { count: prevStudents },
-  ] = await Promise.all([
+  const results = await Promise.all([
     supabase
       .from("students")
       .select("*", { count: "exact", head: true })
@@ -564,7 +557,9 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       .select("*", { count: "exact", head: true })
       .eq("participant_type", "docente"),
     supabase.from("tickets").select("status, sent_at"),
-    supabase.from("students").select("ciclo, status, checked_in_at, participant_type"),
+    supabase
+      .from("students")
+      .select("ciclo, status, checked_in_at, participant_type"),
     supabase
       .from("students")
       .select("*", { count: "exact", head: true })
@@ -577,6 +572,18 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       .gte("registered_at", sixtyDaysAgo.toISOString())
       .lt("registered_at", thirtyDaysAgo.toISOString()),
   ]);
+
+  const failed = results.find((result) => result.error);
+  if (failed?.error) throw new Error(failed.error.message);
+
+  const [
+    { count: totalStudents },
+    { count: totalTeachers },
+    { data: tickets },
+    { data: participants },
+    { count: recentStudents },
+    { count: prevStudents },
+  ] = results;
 
   const allTickets = tickets ?? [];
   const allParticipants = participants ?? [];
