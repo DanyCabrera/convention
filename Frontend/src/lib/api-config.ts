@@ -1,22 +1,23 @@
+const PRODUCTION_API_URL =
+  "https://convention-production.up.railway.app/api";
+
 /**
  * Resuelve la URL del API según el entorno.
- * En producción (Vercel) debe definirse NEXT_PUBLIC_API_URL en el build.
- * En local, si no hay variable, usa el mismo host en el puerto 4000.
+ * En producción usa Railway. En local, NEXT_PUBLIC_API_URL o el host :4000.
  */
 export function getApiBaseUrl(): string {
   const configured = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "");
   if (configured) return configured;
 
-  if (process.env.NODE_ENV !== "production") {
-    if (typeof window !== "undefined") {
-      const { hostname, protocol } = window.location;
-      return `${protocol}//${hostname}:4000/api`;
-    }
-    return "http://localhost:4000/api";
+  if (process.env.NODE_ENV === "production") {
+    return PRODUCTION_API_URL;
   }
 
-  console.error("NEXT_PUBLIC_API_URL no está definida en el build de Vercel.");
-  return "";
+  if (typeof window !== "undefined") {
+    const { hostname, protocol } = window.location;
+    return `${protocol}//${hostname}:4000/api`;
+  }
+  return "http://localhost:4000/api";
 }
 
 export function getApiKey(): string | undefined {

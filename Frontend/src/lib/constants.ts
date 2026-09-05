@@ -1,3 +1,4 @@
+import { getApiBaseUrl } from "./api-config";
 import { getCicloLabel } from "./utils";
 import { PLAN_META, PLANS, type Plan } from "./plans";
 
@@ -6,8 +7,7 @@ export type Ciclo = (typeof CICLOS)[number];
 export type { Plan };
 export { PLANS, PLAN_META };
 
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+export const API_BASE_URL = getApiBaseUrl();
 
 export const EVENT = {
   name: "UMG 2026",
