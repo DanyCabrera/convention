@@ -31,6 +31,8 @@ convention/
    - `004_drop_full_name_unique.sql`
    - `005_add_student_plan.sql`
    - `006_add_participant_type.sql`
+   - `007_add_ticket_correlative.sql`
+   - `008_renumber_correlative_on_delete.sql`
 3. Copia de **Settings → API**:
    - `SUPABASE_URL`
    - `service_role` key → `SUPABASE_SECRET_KEY` (o `SUPABASE_SERVICE_ROLE_KEY`)

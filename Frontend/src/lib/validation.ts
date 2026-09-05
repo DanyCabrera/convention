@@ -59,11 +59,12 @@ export const studentFormSchema = z.object({
 export const ticketNumberSchema = z
   .string()
   .trim()
-  .min(1, "Ingresa el número de ticket")
+  .min(1, "Ingresa el correlativo o código de ticket")
   .max(64, "Código demasiado largo")
   .refine(
-    (val) => /TKT-[A-Z0-9]{6,12}/i.test(val),
-    "Formato inválido. Ejemplo: TKT-ABC1234567"
+    (val) =>
+      /TKT-[A-Z0-9]{6,12}/i.test(val) || /^\d{1,6}$/.test(val),
+    "Usa el correlativo (ej. 42) o TKT-ABC1234567"
   );
 
 export type StudentFormValues = z.infer<typeof studentFormSchema>;

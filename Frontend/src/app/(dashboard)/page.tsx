@@ -93,7 +93,11 @@ export default function DashboardPage() {
             <StatCard
               title="Tickets"
               value={stats.ticketsGenerated}
-              description="Generados"
+              description={
+                stats.lastTicketCorrelative > 0
+                  ? `Último correlativo #${stats.lastTicketCorrelative}`
+                  : "Generados"
+              }
               icon={Ticket}
               index={2}
             />

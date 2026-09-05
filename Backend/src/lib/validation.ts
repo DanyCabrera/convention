@@ -147,11 +147,12 @@ export const scanTicketSchema = z.object({
   ticket_number: z
     .string()
     .trim()
-    .min(1, "Código QR inválido")
+    .min(1, "Ingresa un número de ticket o correlativo")
     .max(64, "Código demasiado largo")
     .refine(
-      (val) => /TKT-[A-Z0-9]{6,12}/i.test(val),
-      "Formato inválido. Debe ser TKT-XXXXXXXXXX"
+      (val) =>
+        /TKT-[A-Z0-9]{6,12}/i.test(val) || /^\d{1,6}$/.test(val),
+      "Usa el correlativo (ej. 42) o el código TKT-XXXXXXXXXX"
     ),
 });
 

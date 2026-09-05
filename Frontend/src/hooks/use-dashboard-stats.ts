@@ -9,6 +9,7 @@ const emptyStats: DashboardStats = {
   totalTeachers: 0,
   ticketsSent: 0,
   ticketsGenerated: 0,
+  lastTicketCorrelative: 0,
   cyclesRegistered: 0,
   emailsSent: 0,
   confirmedParticipants: 0,

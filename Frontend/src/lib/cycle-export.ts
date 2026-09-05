@@ -76,6 +76,9 @@ function tableRows(students: StudentWithTicket[]) {
     getCicloLabel(student.ciclo),
     student.email,
     student.phone,
+    student.ticket?.correlative != null
+      ? String(student.ticket.correlative)
+      : "—",
     getStatusLabel(student.status),
   ]);
 }
@@ -85,6 +88,9 @@ function teacherTableRows(teachers: StudentWithTicket[]) {
     String(index + 1),
     teacher.full_name,
     teacher.email,
+    teacher.ticket?.correlative != null
+      ? String(teacher.ticket.correlative)
+      : "—",
     teacher.ticket?.ticket_number ?? "—",
     getStatusLabel(teacher.status),
     formatShortDate(teacher.registered_at),
@@ -161,7 +167,7 @@ export async function buildCyclePdf({
 
   autoTable(doc, {
     startY: tableStartY,
-    head: [["#", "Nombre", "Carnet", "Plan", "Ciclo", "Correo", "Teléfono", "Estado"]],
+    head: [["#", "Nombre", "Carnet", "Plan", "Ciclo", "Correo", "Teléfono", "Correlativo", "Estado"]],
     body:
       students.length > 0
         ? tableRows(students)
@@ -262,7 +268,7 @@ export async function exportTeachersToPdf({
 
   autoTable(doc, {
     startY: cursorY + 8,
-    head: [["#", "Nombre", "Correo", "Ticket", "Estado", "Registro"]],
+    head: [["#", "Nombre", "Correo", "Correlativo", "Código", "Estado", "Registro"]],
     body:
       teachers.length > 0
         ? teacherTableRows(teachers)
@@ -296,7 +302,11 @@ export async function exportTeachersToExcel({
           "#": index + 1,
           Nombre: teacher.full_name,
           Correo: teacher.email,
-          Ticket: teacher.ticket?.ticket_number ?? "",
+          Correlativo:
+            teacher.ticket?.correlative != null
+              ? teacher.ticket.correlative
+              : "",
+          Código: teacher.ticket?.ticket_number ?? "",
           Estado: getStatusLabel(teacher.status),
           Registro: formatShortDate(teacher.registered_at),
         }))
@@ -438,7 +448,11 @@ export async function exportCycleToExcel(options: CycleExportOptions): Promise<v
           Correo: student.email,
           Teléfono: student.phone,
           Estado: getStatusLabel(student.status),
-          Ticket: student.ticket?.ticket_number ?? "",
+          Correlativo:
+            student.ticket?.correlative != null
+              ? student.ticket.correlative
+              : "",
+          Código: student.ticket?.ticket_number ?? "",
         }))
       : [
           {
@@ -450,7 +464,8 @@ export async function exportCycleToExcel(options: CycleExportOptions): Promise<v
             Correo: "",
             Teléfono: "",
             Estado: "",
-            Ticket: "",
+            Correlativo: "",
+            Código: "",
           },
         ];
 

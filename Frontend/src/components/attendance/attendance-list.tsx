@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { UserCheck, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { displayCarnet } from "@/lib/carnet";
-import { formatDate, getCicloLabel, getParticipantTypeLabel } from "@/lib/utils";
+import { formatDate, formatTicketCorrelative, getCicloLabel, getParticipantTypeLabel } from "@/lib/utils";
 import type { StudentWithTicket } from "@/types";
 
 interface AttendanceListProps {
@@ -60,10 +60,12 @@ export function AttendanceList({ students, loading }: AttendanceListProps) {
                 {isDocente ? (
                   <>
                     <span>{student.email}</span>
-                    {student.ticket?.ticket_number && (
+                    {student.ticket?.correlative != null && (
                       <>
                         <span>·</span>
-                        <span className="font-mono">{student.ticket.ticket_number}</span>
+                        <span className="font-semibold tabular-nums">
+                          {formatTicketCorrelative(student.ticket.correlative)}
+                        </span>
                       </>
                     )}
                   </>

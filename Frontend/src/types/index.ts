@@ -25,6 +25,7 @@ export interface Ticket {
   id: string;
   student_id: string;
   ticket_number: string;
+  correlative: number;
   qr_code: string;
   status: TicketStatus;
   sent_at: string | null;
@@ -40,6 +41,7 @@ export interface DashboardStats {
   totalTeachers: number;
   ticketsSent: number;
   ticketsGenerated: number;
+  lastTicketCorrelative: number;
   cyclesRegistered: number;
   emailsSent: number;
   confirmedParticipants: number;

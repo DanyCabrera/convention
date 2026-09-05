@@ -41,7 +41,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { STATUS_OPTIONS } from "@/lib/constants";
-import { formatDate, getStatusLabel } from "@/lib/utils";
+import { formatDate, formatTicketCorrelative, getStatusLabel } from "@/lib/utils";
 import type { StudentWithTicket } from "@/types";
 
 interface TeachersTableProps {
@@ -93,7 +93,8 @@ export function TeachersTable({
         !globalFilter ||
         teacher.full_name.toLowerCase().includes(q) ||
         teacher.email.toLowerCase().includes(q) ||
-        teacher.ticket?.ticket_number.toLowerCase().includes(q);
+        teacher.ticket?.ticket_number.toLowerCase().includes(q) ||
+        String(teacher.ticket?.correlative ?? "").includes(q);
       return matchesStatus && matchesSearch;
     });
   }, [data, statusFilter, globalFilter]);
@@ -105,12 +106,17 @@ export function TeachersTable({
   const columns = useMemo<ColumnDef<StudentWithTicket>[]>(
     () => [
       {
-        accessorKey: "ticket.ticket_number",
+        accessorKey: "ticket.correlative",
         header: "Ticket",
         cell: ({ row }) => (
-          <span className="font-mono text-xs font-medium text-primary">
-            {row.original.ticket?.ticket_number ?? "—"}
-          </span>
+          <div className="leading-tight">
+            <span className="font-semibold tabular-nums text-primary">
+              {formatTicketCorrelative(row.original.ticket?.correlative)}
+            </span>
+            <p className="font-mono text-[10px] text-muted-foreground">
+              {row.original.ticket?.ticket_number ?? "—"}
+            </p>
+          </div>
         ),
       },
       {

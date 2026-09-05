@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useStudents } from "@/hooks/use-students";
-import { formatDate, getParticipantTypeLabel, getStatusLabel } from "@/lib/utils";
+import { formatDate, getParticipantTypeLabel, getStatusLabel, formatTicketCorrelative } from "@/lib/utils";
 
 export default function TicketsPage() {
   const { data: students, loading, error, refresh } = useStudents();
@@ -34,7 +34,11 @@ export default function TicketsPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Tickets</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Estudiantes y docentes
+          Estudiantes y docentes · último correlativo{" "}
+          {students.reduce(
+            (max, s) => Math.max(max, s.ticket?.correlative ?? 0),
+            0
+          ) || "—"}
         </p>
       </div>
 
@@ -76,7 +80,10 @@ export default function TicketsPage() {
                         {getStatusLabel(student.status)}
                       </Badge>
                     </div>
-                    <p className="mt-4 font-mono text-sm font-medium text-primary">
+                    <p className="mt-4 text-2xl font-bold tabular-nums text-primary">
+                      {formatTicketCorrelative(student.ticket?.correlative)}
+                    </p>
+                    <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
                       {student.ticket?.ticket_number}
                     </p>
                     <p className="mt-1 font-semibold">{student.full_name}</p>

@@ -8,7 +8,12 @@ import { Badge } from "@/components/ui/badge";
 import { TICKET_OVERLAY, TICKET_TEMPLATE_SRC } from "@/lib/constants";
 import { api } from "@/lib/api";
 import { displayCarnet } from "@/lib/carnet";
-import { formatShortDate, getCicloLabel, getStatusLabel } from "@/lib/utils";
+import {
+  formatShortDate,
+  formatTicketCorrelative,
+  getCicloLabel,
+  getStatusLabel,
+} from "@/lib/utils";
 import { useEvent } from "@/hooks/use-event";
 import type { StudentWithTicket } from "@/types";
 import { toast } from "sonner";
@@ -67,8 +72,8 @@ export function TicketView({ student, onUpdated }: TicketViewProps) {
           <div
             className={`absolute grid gap-0 px-[2%] pb-[2%] ${
               isDocente
-                ? "grid-rows-[14%_minmax(0,1fr)]"
-                : "grid-rows-[9%_minmax(0,1fr)]"
+                ? "grid-rows-[12%_minmax(0,1fr)_20%]"
+                : "grid-rows-[minmax(0,1fr)_20%]"
             }`}
             style={{
               left: TICKET_OVERLAY.left,
@@ -77,7 +82,7 @@ export function TicketView({ student, onUpdated }: TicketViewProps) {
               height: TICKET_OVERLAY.height,
             }}
           >
-            {isDocente ? (
+            {isDocente && (
               <div className="flex flex-col items-center justify-end gap-0.5 text-center leading-none">
                 <p className="w-full truncate font-sans text-[clamp(6px,min(2.2vw,2.6vh),13px)] font-bold text-slate-900">
                   {truncateName(student.full_name)}
@@ -86,21 +91,22 @@ export function TicketView({ student, onUpdated }: TicketViewProps) {
                   DOCENTE
                 </p>
               </div>
-            ) : (
-              <p className="flex items-end justify-center truncate font-mono text-[clamp(7px,min(2.5vw,3vh),15px)] font-bold leading-none tracking-tight text-slate-900">
-                {ticket?.ticket_number ?? "—"}
-              </p>
             )}
+
             {ticket?.qr_code && (
               <div className="flex min-h-0 items-center justify-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={ticket.qr_code}
-                  alt={`QR ${ticket.ticket_number}`}
+                  alt={`QR ticket ${formatTicketCorrelative(ticket.correlative)}`}
                   className="h-full w-full object-contain"
                 />
               </div>
             )}
+
+            <p className="flex items-center justify-center font-sans text-[clamp(1.4rem,min(8vw,9vh),4rem)] font-extrabold leading-none text-slate-900">
+              {ticket?.correlative ?? "—"}
+            </p>
           </div>
         </div>
       </motion.div>
@@ -112,6 +118,12 @@ export function TicketView({ student, onUpdated }: TicketViewProps) {
               {isDocente ? "Docente" : "Estudiante"}
             </p>
             <p className="font-semibold">{student.full_name}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Correlativo</p>
+            <p className="text-2xl font-bold tabular-nums">
+              {formatTicketCorrelative(ticket?.correlative)}
+            </p>
           </div>
           {isDocente ? (
             <div>
@@ -135,7 +147,7 @@ export function TicketView({ student, onUpdated }: TicketViewProps) {
             <p className="text-sm text-muted-foreground">{student.email}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Ticket</p>
+            <p className="text-xs text-muted-foreground">Código interno</p>
             <p className="font-mono text-xs">{ticket?.ticket_number ?? "—"}</p>
           </div>
           <div>

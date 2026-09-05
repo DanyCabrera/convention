@@ -188,14 +188,11 @@ export async function sendTicketEmail(
     participantType === "docente"
       ? `Tu ticket de docente — ${event.name}`
       : `Tu ticket — ${event.name}`;
-  const ticketImage = await composeTicketImage(
-    payload.ticket.ticket_number,
-    payload.ticket.qr_code,
-    {
-      participantType,
-      holderName: payload.student.full_name,
-    }
-  );
+  const ticketImage = await composeTicketImage(payload.ticket.qr_code, {
+    correlative: payload.ticket.correlative,
+    participantType,
+    holderName: payload.student.full_name,
+  });
   const html = buildTicketEmailHtml(
     payload.student.full_name,
     event.name,

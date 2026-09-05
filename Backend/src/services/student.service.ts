@@ -556,7 +556,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       .from("students")
       .select("*", { count: "exact", head: true })
       .eq("participant_type", "docente"),
-    supabase.from("tickets").select("status, sent_at"),
+    supabase.from("tickets").select("status, sent_at, correlative"),
     supabase
       .from("students")
       .select("ciclo, status, checked_in_at, participant_type"),
@@ -592,6 +592,11 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   );
 
   const ticketsGenerated = allTickets.length;
+  const lastTicketCorrelative = allTickets.reduce((max, ticket) => {
+    const value =
+      typeof ticket.correlative === "number" ? ticket.correlative : 0;
+    return Math.max(max, value);
+  }, 0);
   const ticketsSent = allTickets.filter(
     (t) => t.status === "sent" || t.status === "delivered"
   ).length;
@@ -618,6 +623,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     totalTeachers: totalTeachers ?? 0,
     ticketsSent,
     ticketsGenerated,
+    lastTicketCorrelative,
     cyclesRegistered: cyclesWithStudents.size,
     emailsSent,
     confirmedParticipants: confirmed,
@@ -719,19 +725,42 @@ function normalizeTicketNumber(raw: string): string {
   return match ? match[0].toUpperCase() : trimmed.toUpperCase();
 }
 
-export async function confirmByTicketNumber(
-  rawTicketNumber: string
-): Promise<ScanResult> {
-  const supabase = getSupabase();
-  const ticketNumber = normalizeTicketNumber(rawTicketNumber);
+function parseCorrelativeLookup(raw: string): number | null {
+  const trimmed = raw.trim();
+  if (!/^\d{1,6}$/.test(trimmed)) return null;
+  const value = Number.parseInt(trimmed, 10);
+  return value > 0 ? value : null;
+}
 
-  const { data: ticket, error: ticketError } = await supabase
+async function findTicketByLookup(raw: string): Promise<DbTicket | null> {
+  const supabase = getSupabase();
+  const correlative = parseCorrelativeLookup(raw);
+
+  if (correlative !== null) {
+    const { data, error } = await supabase
+      .from("tickets")
+      .select("*")
+      .eq("correlative", correlative)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (data) return data as DbTicket;
+  }
+
+  const ticketNumber = normalizeTicketNumber(raw);
+  const { data, error } = await supabase
     .from("tickets")
     .select("*")
     .eq("ticket_number", ticketNumber)
     .maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data as DbTicket | null) ?? null;
+}
 
-  if (ticketError) throw new Error(ticketError.message);
+export async function confirmByTicketNumber(
+  rawTicketNumber: string
+): Promise<ScanResult> {
+  const supabase = getSupabase();
+  const ticket = await findTicketByLookup(rawTicketNumber);
   if (!ticket) {
     throw new Error("Ticket no válido o no encontrado");
   }

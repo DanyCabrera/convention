@@ -152,10 +152,10 @@ export default function AsistenciaPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="space-y-2">
-                <Label htmlFor="manual-ticket">N° ticket</Label>
+                <Label htmlFor="manual-ticket">Correlativo o código</Label>
                 <Input
                   id="manual-ticket"
-                  placeholder="TKT-XXXXXXXX"
+                  placeholder="42 o TKT-XXXXXXXX"
                   value={manualTicket}
                   onChange={(e) => {
                     setManualTicket(e.target.value.toUpperCase());

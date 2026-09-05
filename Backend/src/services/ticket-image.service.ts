@@ -30,16 +30,16 @@ function truncateLabel(value: string, maxLen: number): string {
 }
 
 export interface ComposeTicketImageOptions {
+  correlative: number;
   participantType?: "estudiante" | "docente";
   holderName?: string;
 }
 
 export async function composeTicketImage(
-  ticketNumber: string,
   qrDataUrl: string,
-  options?: ComposeTicketImageOptions
+  options: ComposeTicketImageOptions
 ): Promise<Buffer> {
-  const isDocente = options?.participantType === "docente";
+  const isDocente = options.participantType === "docente";
   const template = sharp(TEMPLATE_PATH);
   const meta = await template.metadata();
   const width = meta.width!;
@@ -56,20 +56,19 @@ export async function composeTicketImage(
   const innerWidth = boxWidth - pad * 2;
   const innerHeight = boxHeight - pad * 2;
 
-  const numberHeight = Math.round(
-    innerHeight *
-      (isDocente ? 0.16 : TICKET_LAYOUT.numberHeightPct)
+  const docenteHeaderHeight = isDocente
+    ? Math.round(innerHeight * TICKET_LAYOUT.docenteHeaderPct)
+    : 0;
+  const correlativeHeight = Math.round(
+    innerHeight * TICKET_LAYOUT.correlativeHeightPct
   );
-  const qrAreaHeight = innerHeight - numberHeight;
+  const gap = Math.max(2, Math.round(innerHeight * TICKET_LAYOUT.gapPct));
+  const qrAreaHeight =
+    innerHeight - docenteHeaderHeight - correlativeHeight - gap * 2;
 
-  const fontSize = Math.min(
-    Math.round(innerWidth * (isDocente ? 0.042 : TICKET_LAYOUT.fontSizePct)),
-    Math.round(numberHeight * (isDocente ? 0.38 : 0.82))
-  );
-  const gap = Math.max(2, Math.round(innerHeight * 0.004));
   const qrSize = Math.min(
     Math.round(innerWidth * TICKET_LAYOUT.qrFillPct),
-    qrAreaHeight - gap
+    qrAreaHeight
   );
 
   const qrBuffer = parseQrBuffer(qrDataUrl);
@@ -79,47 +78,52 @@ export async function composeTicketImage(
     .toBuffer();
 
   const contentTop = boxTop + pad;
-  const qrLeft = boxLeft + pad + Math.round((innerWidth - qrSize) / 2);
-  const qrTop = contentTop + numberHeight + gap;
-
   const textCenterX = boxLeft + boxWidth / 2;
-  const nameY = contentTop + Math.round(numberHeight * 0.42);
-  const badgeY = contentTop + Math.round(numberHeight * 0.78);
-  const ticketY = contentTop + Math.round(numberHeight * 0.72);
 
-  const textSvg = Buffer.from(
-    isDocente && options?.holderName
-      ? `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+  let cursorY = contentTop;
+  let svgExtra = "";
+
+  if (isDocente && options.holderName) {
+    const nameFont = Math.min(
+      Math.round(innerWidth * TICKET_LAYOUT.docenteNameFontPct),
+      Math.round(docenteHeaderHeight * 0.55)
+    );
+    const nameY = cursorY + Math.round(docenteHeaderHeight * 0.62);
+    svgExtra += `
       <text
         x="${textCenterX}"
         y="${nameY}"
         text-anchor="middle"
         font-family="Inter, Arial, sans-serif"
         font-weight="700"
-        font-size="${fontSize}"
+        font-size="${nameFont}"
         fill="#0f172a"
-      >${escapeSvgText(truncateLabel(options.holderName, 24))}</text>
+      >${escapeSvgText(truncateLabel(options.holderName, 22))}</text>`;
+    cursorY += docenteHeaderHeight;
+  }
+
+  const qrTop = cursorY + Math.round((qrAreaHeight - qrSize) / 2);
+  const qrLeft = boxLeft + pad + Math.round((innerWidth - qrSize) / 2);
+  cursorY += qrAreaHeight + gap;
+
+  const correlativeFont = Math.min(
+    Math.round(innerWidth * TICKET_LAYOUT.correlativeFontPct),
+    Math.round(correlativeHeight * 0.72)
+  );
+  const correlativeY = cursorY + Math.round(correlativeHeight * 0.72);
+
+  const textSvg = Buffer.from(
+    `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+      ${svgExtra}
       <text
         x="${textCenterX}"
-        y="${badgeY}"
+        y="${correlativeY}"
         text-anchor="middle"
         font-family="Inter, Arial, sans-serif"
-        font-weight="700"
-        font-size="${Math.max(8, Math.round(fontSize * 0.72))}"
-        fill="#2563EB"
-        letter-spacing="1.2"
-      >DOCENTE</text>
-    </svg>`
-      : `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-      <text
-        x="${textCenterX}"
-        y="${ticketY}"
-        text-anchor="middle"
-        font-family="Consolas, Monaco, monospace"
-        font-weight="700"
-        font-size="${fontSize}"
+        font-weight="800"
+        font-size="${correlativeFont}"
         fill="#0f172a"
-      >${escapeSvgText(ticketNumber)}</text>
+      >${escapeSvgText(String(options.correlative))}</text>
     </svg>`
   );
 

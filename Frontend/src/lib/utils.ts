@@ -23,6 +23,13 @@ export function formatShortDate(date: string): string {
   }).format(new Date(date));
 }
 
+export function formatTicketCorrelative(
+  correlative: number | null | undefined
+): string {
+  if (correlative == null || Number.isNaN(correlative)) return "—";
+  return `#${correlative}`;
+}
+
 export function getCicloLabel(ciclo: number | null | undefined): string {
   if (!ciclo) return "—";
   const labels: Record<number, string> = {

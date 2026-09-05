@@ -43,7 +43,7 @@ import {
 import { CICLO_OPTIONS, PLAN_OPTIONS, STATUS_OPTIONS } from "@/lib/constants";
 import { displayCarnet, stripCarnetDigits } from "@/lib/carnet";
 import { getPlanFromCarnet, getPlanLabel, type Plan } from "@/lib/plans";
-import { formatDate, getCicloLabel, getParticipantTypeLabel, getStatusLabel } from "@/lib/utils";
+import { formatDate, formatTicketCorrelative, getCicloLabel, getParticipantTypeLabel, getStatusLabel } from "@/lib/utils";
 import type { StudentWithTicket } from "@/types";
 
 interface StudentsTableProps {
@@ -113,7 +113,8 @@ export function StudentsTable({
         (student.carnet &&
           (displayCarnet(student.carnet).includes(q) ||
             stripCarnetDigits(student.carnet).includes(qDigits))) ||
-        student.ticket?.ticket_number.toLowerCase().includes(q);
+        student.ticket?.ticket_number.toLowerCase().includes(q) ||
+        String(student.ticket?.correlative ?? "").includes(q);
       return matchesPlan && matchesCiclo && matchesStatus && matchesSearch;
     });
   }, [data, planFilter, cicloFilter, statusFilter, globalFilter]);
@@ -125,12 +126,17 @@ export function StudentsTable({
   const columns = useMemo<ColumnDef<StudentWithTicket>[]>(() => {
     const cols: ColumnDef<StudentWithTicket>[] = [
       {
-        accessorKey: "ticket.ticket_number",
+        accessorKey: "ticket.correlative",
         header: "Ticket",
         cell: ({ row }) => (
-          <span className="font-mono text-xs font-medium text-primary">
-            {row.original.ticket?.ticket_number ?? "—"}
-          </span>
+          <div className="leading-tight">
+            <span className="font-semibold tabular-nums text-primary">
+              {formatTicketCorrelative(row.original.ticket?.correlative)}
+            </span>
+            <p className="font-mono text-[10px] text-muted-foreground">
+              {row.original.ticket?.ticket_number ?? "—"}
+            </p>
+          </div>
         ),
       },
       {
