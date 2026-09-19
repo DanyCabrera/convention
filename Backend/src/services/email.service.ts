@@ -177,7 +177,11 @@ export async function sendTicketEmail(
   payload: TicketEmailPayload
 ): Promise<void> {
   const to = payload.student.email;
-  if (!to) {
+  if (
+    !to ||
+    to.toLowerCase().endsWith("@sin-correo.local") ||
+    payload.student.participant_type === "docente"
+  ) {
     throw new Error("Este registro no tiene correo para enviar el ticket");
   }
 

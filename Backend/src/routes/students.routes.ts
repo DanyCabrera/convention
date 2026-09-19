@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { CICLOS, type Ciclo, type Plan } from "../types/student.types.js";
 import {
-  createParticipantSchema,
+  createDocenteSchema,
+  createStudentSchema,
   updateStudentSchema,
   scanTicketSchema,
   studentIdSchema,
@@ -206,16 +207,20 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const parsed = createParticipantSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return res.status(400).json({ error: formatZodError(parsed.error) });
-    }
-
-    if (parsed.data.participant_type === "docente") {
+    if (req.body?.participant_type === "docente") {
+      const parsed = createDocenteSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: formatZodError(parsed.error) });
+      }
       const docente = await studentService.createDocente({
         full_name: parsed.data.full_name,
       });
       return res.status(201).json(docente);
+    }
+
+    const parsed = createStudentSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: formatZodError(parsed.error) });
     }
 
     const student = await studentService.createStudent({

@@ -30,6 +30,11 @@ export function formatTicketCorrelative(
   return `#${correlative}`;
 }
 
+export function hasRealEmail(email: string | null | undefined): boolean {
+  if (!email) return false;
+  return !email.toLowerCase().endsWith("@sin-correo.local");
+}
+
 export function getCicloLabel(ciclo: number | null | undefined): string {
   if (!ciclo) return "—";
   const labels: Record<number, string> = {

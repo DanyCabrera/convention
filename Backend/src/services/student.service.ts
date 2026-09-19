@@ -70,7 +70,10 @@ async function deliverTicketEmail(
   student: DbStudent,
   ticket: DbTicket
 ): Promise<StudentWithTicket> {
-  if (!student.email) {
+  const isDocente = student.participant_type === "docente";
+  const hasRealEmail =
+    !!student.email && !student.email.toLowerCase().endsWith("@sin-correo.local");
+  if (!hasRealEmail || isDocente) {
     return mapStudent(student, ticket);
   }
 
@@ -346,7 +349,7 @@ export async function createDocente(
     .from("students")
     .insert({
       full_name: input.full_name,
-      email: null,
+      email: `docente-${randomUUID()}@sin-correo.local`,
       phone: null,
       carnet: null,
       ciclo: null,

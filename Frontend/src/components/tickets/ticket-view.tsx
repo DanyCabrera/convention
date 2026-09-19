@@ -13,6 +13,7 @@ import {
   formatTicketCorrelative,
   getCicloLabel,
   getStatusLabel,
+  hasRealEmail,
 } from "@/lib/utils";
 import { useEvent } from "@/hooks/use-event";
 import type { StudentWithTicket } from "@/types";
@@ -142,7 +143,7 @@ export function TicketView({ student, onUpdated }: TicketViewProps) {
               <p className="text-sm">{getCicloLabel(student.ciclo)}</p>
             </div>
           )}
-          {student.email ? (
+          {hasRealEmail(student.email) ? (
           <div>
             <p className="text-xs text-muted-foreground">Correo</p>
             <p className="text-sm text-muted-foreground">{student.email}</p>
@@ -169,7 +170,7 @@ export function TicketView({ student, onUpdated }: TicketViewProps) {
       </div>
 
       <div className="flex gap-3 print:hidden">
-        {student.email ? (
+        {hasRealEmail(student.email) ? (
           <Button variant="outline" className="flex-1" onClick={handleResend}>
             <Mail className="h-4 w-4" />
             Enviar por correo

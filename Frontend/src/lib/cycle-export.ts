@@ -87,7 +87,9 @@ function teacherTableRows(teachers: StudentWithTicket[]) {
   return teachers.map((teacher, index) => [
     String(index + 1),
     teacher.full_name,
-    teacher.email ?? "—",
+    teacher.email && !teacher.email.endsWith("@sin-correo.local")
+      ? teacher.email
+      : "—",
     teacher.ticket?.correlative != null
       ? String(teacher.ticket.correlative)
       : "—",

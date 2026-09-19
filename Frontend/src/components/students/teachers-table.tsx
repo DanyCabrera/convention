@@ -41,7 +41,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { STATUS_OPTIONS } from "@/lib/constants";
-import { formatDate, formatTicketCorrelative, getStatusLabel } from "@/lib/utils";
+import { formatDate, formatTicketCorrelative, getStatusLabel, hasRealEmail } from "@/lib/utils";
 import type { StudentWithTicket } from "@/types";
 
 interface TeachersTableProps {
@@ -172,7 +172,7 @@ export function TeachersTable({
                   Ver ticket
                 </Link>
               </DropdownMenuItem>
-              {onResend && row.original.email && (
+              {onResend && hasRealEmail(row.original.email) && (
                 <DropdownMenuItem onClick={() => onResend(row.original.id)}>
                   <Mail className="mr-2 h-4 w-4" />
                   Enviar por correo
