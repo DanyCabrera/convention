@@ -59,10 +59,10 @@ export function AttendanceList({ students, loading }: AttendanceListProps) {
               <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                 {isDocente ? (
                   <>
-                    <span>{student.email}</span>
+                    {student.email ? <span>{student.email}</span> : null}
                     {student.ticket?.correlative != null && (
                       <>
-                        <span>·</span>
+                        {student.email ? <span>·</span> : null}
                         <span className="font-semibold tabular-nums">
                           {formatTicketCorrelative(student.ticket.correlative)}
                         </span>

@@ -37,7 +37,6 @@ import type { StudentWithTicket } from "@/types";
 
 const editDocenteSchema = studentFormSchema.pick({
   full_name: true,
-  email: true,
 });
 
 interface EditStudentDialogProps {
@@ -74,7 +73,7 @@ export function EditStudentDialog({
       if (student.participant_type === "docente") {
         reset({
           full_name: student.full_name,
-          email: student.email,
+          email: student.email ?? "",
           phone: "",
           carnet: "",
           ciclo: "2",
@@ -83,7 +82,7 @@ export function EditStudentDialog({
       }
       reset({
         full_name: student.full_name,
-        email: student.email,
+        email: student.email ?? "",
         phone: student.phone ?? "",
         carnet: displayCarnet(student.carnet),
         ciclo: String(student.ciclo) as StudentFormValues["ciclo"],
@@ -97,8 +96,6 @@ export function EditStudentDialog({
       if (student.participant_type === "docente") {
         await api.updateStudent(student.id, {
           full_name: data.full_name,
-          email: data.email,
-          phone: data.phone,
         });
         toast.success("Docente actualizado");
         onOpenChange(false);
@@ -160,6 +157,7 @@ export function EditStudentDialog({
               </p>
             )}
           </div>
+          {isDocente ? null : (
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="edit-email">Correo</Label>
@@ -197,6 +195,7 @@ export function EditStudentDialog({
               )}
             </div>
           </div>
+          )}
           {!isDocente && (
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">

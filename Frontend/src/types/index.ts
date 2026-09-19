@@ -8,7 +8,7 @@ export type ParticipantType = "estudiante" | "docente";
 export interface Student {
   id: string;
   full_name: string;
-  email: string;
+  email: string | null;
   phone: string | null;
   carnet: string | null;
   ciclo: Ciclo | null;
@@ -87,7 +87,6 @@ export interface CreateStudentInput {
 export interface CreateDocenteInput {
   participant_type: "docente";
   full_name: string;
-  email: string;
 }
 
 export interface ScanResult {

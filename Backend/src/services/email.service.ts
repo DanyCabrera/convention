@@ -176,6 +176,11 @@ async function sendViaSmtp(
 export async function sendTicketEmail(
   payload: TicketEmailPayload
 ): Promise<void> {
+  const to = payload.student.email;
+  if (!to) {
+    throw new Error("Este registro no tiene correo para enviar el ticket");
+  }
+
   if (!isEmailConfigured()) {
     throw new Error(
       "No se pudo enviar el correo. Contacta al administrador del sistema."
@@ -202,8 +207,8 @@ export async function sendTicketEmail(
   const { provider } = getEmailConfigStatus();
 
   if (provider === "resend") {
-    await sendViaResend(payload.student.email, subject, html, ticketImage);
+    await sendViaResend(to, subject, html, ticketImage);
   } else {
-    await sendViaSmtp(payload.student.email, subject, html, ticketImage);
+    await sendViaSmtp(to, subject, html, ticketImage);
   }
 }

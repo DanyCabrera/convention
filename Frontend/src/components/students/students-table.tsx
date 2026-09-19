@@ -109,7 +109,7 @@ export function StudentsTable({
       const matchesSearch =
         !globalFilter ||
         student.full_name.toLowerCase().includes(q) ||
-        student.email.toLowerCase().includes(q) ||
+        student.email?.toLowerCase().includes(q) ||
         (student.carnet &&
           (displayCarnet(student.carnet).includes(q) ||
             stripCarnetDigits(student.carnet).includes(qDigits))) ||

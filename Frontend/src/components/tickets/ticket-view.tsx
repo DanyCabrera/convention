@@ -142,10 +142,12 @@ export function TicketView({ student, onUpdated }: TicketViewProps) {
               <p className="text-sm">{getCicloLabel(student.ciclo)}</p>
             </div>
           )}
+          {student.email ? (
           <div>
             <p className="text-xs text-muted-foreground">Correo</p>
             <p className="text-sm text-muted-foreground">{student.email}</p>
           </div>
+          ) : null}
           <div>
             <p className="text-xs text-muted-foreground">Código interno</p>
             <p className="font-mono text-xs">{ticket?.ticket_number ?? "—"}</p>
@@ -167,10 +169,12 @@ export function TicketView({ student, onUpdated }: TicketViewProps) {
       </div>
 
       <div className="flex gap-3 print:hidden">
-        <Button variant="outline" className="flex-1" onClick={handleResend}>
-          <Mail className="h-4 w-4" />
-          Enviar por correo
-        </Button>
+        {student.email ? (
+          <Button variant="outline" className="flex-1" onClick={handleResend}>
+            <Mail className="h-4 w-4" />
+            Enviar por correo
+          </Button>
+        ) : null}
         <Button variant="outline" className="flex-1" onClick={() => window.print()}>
           <Printer className="h-4 w-4" />
           Imprimir

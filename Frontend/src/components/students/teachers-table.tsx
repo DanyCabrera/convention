@@ -92,7 +92,7 @@ export function TeachersTable({
       const matchesSearch =
         !globalFilter ||
         teacher.full_name.toLowerCase().includes(q) ||
-        teacher.email.toLowerCase().includes(q) ||
+        (teacher.email?.toLowerCase().includes(q) ?? false) ||
         teacher.ticket?.ticket_number.toLowerCase().includes(q) ||
         String(teacher.ticket?.correlative ?? "").includes(q);
       return matchesStatus && matchesSearch;
@@ -137,13 +137,6 @@ export function TeachersTable({
         ),
       },
       {
-        accessorKey: "email",
-        header: "Correo",
-        cell: ({ row }) => (
-          <span className="text-muted-foreground">{row.original.email}</span>
-        ),
-      },
-      {
         accessorKey: "registered_at",
         header: "Registro",
         cell: ({ row }) => (
@@ -179,7 +172,7 @@ export function TeachersTable({
                   Ver ticket
                 </Link>
               </DropdownMenuItem>
-              {onResend && (
+              {onResend && row.original.email && (
                 <DropdownMenuItem onClick={() => onResend(row.original.id)}>
                   <Mail className="mr-2 h-4 w-4" />
                   Enviar por correo

@@ -70,6 +70,10 @@ async function deliverTicketEmail(
   student: DbStudent,
   ticket: DbTicket
 ): Promise<StudentWithTicket> {
+  if (!student.email) {
+    return mapStudent(student, ticket);
+  }
+
   const supabase = getSupabase();
 
   try {
@@ -143,16 +147,11 @@ function mapUniqueViolation(error: { message?: string; details?: string }): stri
 }
 
 async function findDuplicate(
-  fields: { email: string; phone?: string | null; carnet?: string | null },
+  fields: { email?: string | null; phone?: string | null; carnet?: string | null },
   excludeId?: string
 ): Promise<DuplicateField | null> {
   const supabase = getSupabase();
 
-  let emailQuery = supabase
-    .from("students")
-    .select("id")
-    .eq("email", fields.email.toLowerCase())
-    .limit(1);
   let phoneQuery = supabase
     .from("students")
     .select("id")
@@ -160,16 +159,25 @@ async function findDuplicate(
     .limit(1);
 
   if (excludeId) {
-    emailQuery = emailQuery.neq("id", excludeId);
     phoneQuery = phoneQuery.neq("id", excludeId);
   }
 
-  const [{ data: byEmail }, { data: byPhone }] = await Promise.all([
-    emailQuery.maybeSingle(),
-    fields.phone ? phoneQuery.maybeSingle() : Promise.resolve({ data: null }),
-  ]);
+  if (fields.email) {
+    let emailQuery = supabase
+      .from("students")
+      .select("id")
+      .eq("email", fields.email.toLowerCase())
+      .limit(1);
+    if (excludeId) {
+      emailQuery = emailQuery.neq("id", excludeId);
+    }
+    const { data: byEmail } = await emailQuery.maybeSingle();
+    if (byEmail) return "email";
+  }
 
-  if (byEmail) return "email";
+  const { data: byPhone } = fields.phone
+    ? await phoneQuery.maybeSingle()
+    : { data: null };
 
   if (fields.carnet) {
     let carnetQuery = supabase
@@ -334,18 +342,11 @@ export async function createDocente(
 ): Promise<StudentWithTicket> {
   const supabase = getSupabase();
 
-  const duplicate = await findDuplicate({
-    email: input.email,
-  });
-  if (duplicate) {
-    throw new Error(duplicateErrorMessage(duplicate));
-  }
-
   const { data: student, error: studentError } = await supabase
     .from("students")
     .insert({
       full_name: input.full_name,
-      email: input.email.toLowerCase(),
+      email: null,
       phone: null,
       carnet: null,
       ciclo: null,

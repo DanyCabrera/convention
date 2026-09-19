@@ -87,7 +87,6 @@ export const createStudentSchema = studentFieldsSchema.transform((data) => {
 export const createDocenteSchema = z.object({
   participant_type: z.literal("docente"),
   full_name: nameSchema,
-  email: emailSchema,
 });
 
 export const createParticipantSchema = z.union([

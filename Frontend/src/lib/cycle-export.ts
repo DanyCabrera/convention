@@ -87,7 +87,7 @@ function teacherTableRows(teachers: StudentWithTicket[]) {
   return teachers.map((teacher, index) => [
     String(index + 1),
     teacher.full_name,
-    teacher.email,
+    teacher.email ?? "—",
     teacher.ticket?.correlative != null
       ? String(teacher.ticket.correlative)
       : "—",
@@ -301,7 +301,7 @@ export async function exportTeachersToExcel({
       ? teachers.map((teacher, index) => ({
           "#": index + 1,
           Nombre: teacher.full_name,
-          Correo: teacher.email,
+          Correo: teacher.email ?? "",
           Correlativo:
             teacher.ticket?.correlative != null
               ? teacher.ticket.correlative

@@ -9,10 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
 import {
-  canAccessTeacherField,
   sanitizePersonName,
   teacherFormSchema,
   type TeacherFormValues,
@@ -24,7 +22,6 @@ export function RegisterTeacherForm() {
     register,
     handleSubmit,
     setValue,
-    watch,
     trigger,
     formState: { errors, isSubmitting, isValid },
   } = useForm<TeacherFormValues>({
@@ -32,26 +29,16 @@ export function RegisterTeacherForm() {
     mode: "onTouched",
     defaultValues: {
       full_name: "",
-      email: "",
     },
   });
 
-  const values = watch();
-  const canEmail = canAccessTeacherField("email", values, errors);
-
   async function onSubmit(data: TeacherFormValues) {
     try {
-      const result = await api.createDocente({
+      await api.createDocente({
         participant_type: "docente",
         full_name: data.full_name,
-        email: data.email,
       });
-
-      if (result.ticket?.status === "failed") {
-        toast.warning("Registrado. El correo no se envió.");
-      } else {
-        toast.success("Docente registrado");
-      }
+      toast.success("Docente registrado");
       router.push("/estudiantes?tipo=docente");
     } catch (err) {
       toast.error("No se pudo registrar", {
@@ -100,31 +87,6 @@ export function RegisterTeacherForm() {
           {errors.full_name && (
             <p className="text-xs text-destructive" role="alert">
               {errors.full_name.message}
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="teacher_email">Correo</Label>
-          <Input
-            id="teacher_email"
-            type="email"
-            placeholder="Ej.: correo@umg.edu.gt"
-            disabled={!canEmail}
-            className={cn(!canEmail && "opacity-50")}
-            aria-invalid={!!errors.email}
-            autoComplete="email"
-            {...register("email", {
-              onChange: (e) => {
-                setValue("email", e.target.value.replace(/\s/g, ""), {
-                  shouldValidate: true,
-                });
-              },
-            })}
-          />
-          {errors.email && (
-            <p className="text-xs text-destructive" role="alert">
-              {errors.email.message}
             </p>
           )}
         </div>

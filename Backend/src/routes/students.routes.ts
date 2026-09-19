@@ -214,7 +214,6 @@ router.post("/", async (req, res) => {
     if (parsed.data.participant_type === "docente") {
       const docente = await studentService.createDocente({
         full_name: parsed.data.full_name,
-        email: parsed.data.email,
       });
       return res.status(201).json(docente);
     }

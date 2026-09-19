@@ -71,31 +71,9 @@ export type StudentFormValues = z.infer<typeof studentFormSchema>;
 
 export const teacherFormSchema = z.object({
   full_name: studentFormSchema.shape.full_name,
-  email: studentFormSchema.shape.email,
 });
 
 export type TeacherFormValues = z.infer<typeof teacherFormSchema>;
-
-export const TEACHER_FIELD_ORDER: (keyof TeacherFormValues)[] = [
-  "full_name",
-  "email",
-];
-
-export function canAccessTeacherField(
-  field: keyof TeacherFormValues,
-  values: Partial<TeacherFormValues>,
-  errors: Partial<Record<keyof TeacherFormValues, { message?: string }>>
-): boolean {
-  const index = TEACHER_FIELD_ORDER.indexOf(field);
-  for (let i = 0; i < index; i++) {
-    const key = TEACHER_FIELD_ORDER[i];
-    if (errors[key]) return false;
-    const fieldSchema = teacherFormSchema.shape[key];
-    const result = fieldSchema.safeParse(values[key]);
-    if (!result.success) return false;
-  }
-  return true;
-}
 
 export const FIELD_ORDER: (keyof StudentFormValues)[] = [
   "full_name",
