@@ -96,16 +96,24 @@ export default function CicloDetailPage() {
       </div>
 
       {loading ? (
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-28 rounded-2xl" />
+            <Skeleton
+              key={i}
+              className={`h-28 rounded-2xl ${i === 2 ? "col-span-2 sm:col-span-1" : ""}`}
+            />
           ))}
         </div>
       ) : stats ? (
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
           <StatCard title="Estudiantes" value={stats.studentCount} icon={Users} />
           <StatCard title="Tickets" value={stats.ticketsSent} icon={Ticket} />
-          <StatCard title="Asistentes" value={stats.attendees} icon={UserCheck} />
+          <StatCard
+            title="Asistentes"
+            value={stats.attendees}
+            icon={UserCheck}
+            className="col-span-2 sm:col-span-1"
+          />
         </div>
       ) : null}
 

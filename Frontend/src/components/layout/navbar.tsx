@@ -39,7 +39,7 @@ export function Navbar({ onMenuClick }: NavbarProps) {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-[var(--navbar-height)] items-center gap-4 border-b border-border bg-card/80 px-4 backdrop-blur-md lg:px-6">
+    <header className="sticky top-0 z-30 flex h-[var(--navbar-height)] items-center gap-2 border-b border-border bg-card/80 px-3 backdrop-blur-md sm:gap-4 sm:px-4 lg:px-6">
       <Button
         variant="ghost"
         size="icon"
@@ -65,12 +65,14 @@ export function Navbar({ onMenuClick }: NavbarProps) {
 
       <form
         onSubmit={onSearchSubmit}
-        className="relative flex-1 md:max-w-sm lg:max-w-md"
+        className="relative min-w-0 flex-1 md:max-w-sm lg:max-w-md"
       >
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           name="search"
-          placeholder="Buscar por nombre, correo o ticket..."
+          type="search"
+          enterKeyHint="search"
+          placeholder="Buscar nombre o ticket..."
           onKeyDown={onSearchKeyDown}
           className="pl-9 bg-muted/50 border-transparent focus-visible:bg-card"
           aria-label="Buscar participantes"
@@ -79,7 +81,7 @@ export function Navbar({ onMenuClick }: NavbarProps) {
 
       <Link
         href="/configuracion"
-        className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         aria-label="Información del evento"
       >
         <Settings className="h-5 w-5" />

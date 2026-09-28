@@ -15,9 +15,9 @@ export function DashboardShell({ children }: DashboardShellProps) {
     <div className="min-h-screen bg-background">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <div className="lg:pl-[var(--sidebar-width)]">
+      <div className="min-w-0 overflow-x-clip lg:pl-[var(--sidebar-width)]">
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="p-4 lg:p-6">{children}</main>
+        <main className="min-w-0 p-3 sm:p-4 lg:p-6">{children}</main>
       </div>
     </div>
   );

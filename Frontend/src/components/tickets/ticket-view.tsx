@@ -60,7 +60,7 @@ export function TicketView({ student, onUpdated }: TicketViewProps) {
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className="print:shadow-none"
       >
-        <div className="relative mx-auto w-full overflow-hidden rounded-xl shadow-2xl print:overflow-visible print:rounded-none print:shadow-none">
+        <div className="relative mx-auto w-full overflow-hidden rounded-lg shadow-xl sm:rounded-xl sm:shadow-2xl print:overflow-visible print:rounded-none print:shadow-none">
           <Image
             src={TICKET_TEMPLATE_SRC}
             alt="Ticket UMG 2026"
@@ -71,7 +71,7 @@ export function TicketView({ student, onUpdated }: TicketViewProps) {
           />
 
           <div
-            className={`absolute grid gap-0 px-[2%] pb-[2%] ${
+            className={`absolute grid gap-0 px-[2%] pb-[2%] [container-type:size] ${
               isDocente
                 ? "grid-rows-[12%_minmax(0,1fr)_20%]"
                 : "grid-rows-[minmax(0,1fr)_20%]"
@@ -85,10 +85,10 @@ export function TicketView({ student, onUpdated }: TicketViewProps) {
           >
             {isDocente && (
               <div className="flex flex-col items-center justify-end gap-0.5 text-center leading-none">
-                <p className="w-full truncate font-sans text-[clamp(6px,min(2.2vw,2.6vh),13px)] font-bold text-slate-900">
+                <p className="w-full truncate font-sans text-[length:min(5.5cqw,6.6cqh)] font-bold text-slate-900">
                   {truncateName(student.full_name)}
                 </p>
-                <p className="font-sans text-[clamp(5px,min(1.6vw,1.9vh),10px)] font-bold tracking-[0.12em] text-blue-600">
+                <p className="font-sans text-[length:min(4cqw,4.5cqh)] font-bold tracking-[0.12em] text-blue-600">
                   DOCENTE
                 </p>
               </div>
@@ -105,7 +105,7 @@ export function TicketView({ student, onUpdated }: TicketViewProps) {
               </div>
             )}
 
-            <p className="flex items-center justify-center font-sans text-[clamp(1.4rem,min(8vw,9vh),4rem)] font-extrabold leading-none text-slate-900">
+            <p className="flex items-center justify-center font-sans text-[length:min(22cqw,14.4cqh)] font-extrabold leading-none text-slate-900">
               {ticket?.correlative ?? "—"}
             </p>
           </div>
@@ -146,7 +146,7 @@ export function TicketView({ student, onUpdated }: TicketViewProps) {
           {hasRealEmail(student.email) ? (
           <div>
             <p className="text-xs text-muted-foreground">Correo</p>
-            <p className="text-sm text-muted-foreground">{student.email}</p>
+            <p className="break-all text-sm text-muted-foreground">{student.email}</p>
           </div>
           ) : null}
           <div>
@@ -169,7 +169,7 @@ export function TicketView({ student, onUpdated }: TicketViewProps) {
         </div>
       </div>
 
-      <div className="flex gap-3 print:hidden">
+      <div className="flex flex-col gap-3 print:hidden sm:flex-row">
         {hasRealEmail(student.email) ? (
           <Button variant="outline" className="flex-1" onClick={handleResend}>
             <Mail className="h-4 w-4" />

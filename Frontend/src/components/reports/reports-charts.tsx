@@ -43,36 +43,36 @@ export function ReportsCharts({ stats, cycleStats }: ReportsChartsProps) {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5"
+        className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5"
       >
         <Card className="glass-card">
-          <CardContent className="p-5">
+          <CardContent className="p-4 sm:p-5">
             <p className="text-sm text-muted-foreground">Estudiantes</p>
-            <p className="text-3xl font-bold">{stats.totalStudents}</p>
+            <p className="text-2xl font-bold sm:text-3xl">{stats.totalStudents}</p>
           </CardContent>
         </Card>
         <Card className="glass-card">
-          <CardContent className="p-5">
+          <CardContent className="p-4 sm:p-5">
             <p className="text-sm text-muted-foreground">Docentes</p>
-            <p className="text-3xl font-bold">{stats.totalTeachers}</p>
+            <p className="text-2xl font-bold sm:text-3xl">{stats.totalTeachers}</p>
           </CardContent>
         </Card>
         <Card className="glass-card">
-          <CardContent className="p-5">
+          <CardContent className="p-4 sm:p-5">
             <p className="text-sm text-muted-foreground">Tickets</p>
-            <p className="text-3xl font-bold">{stats.ticketsGenerated}</p>
+            <p className="text-2xl font-bold sm:text-3xl">{stats.ticketsGenerated}</p>
           </CardContent>
         </Card>
         <Card className="glass-card">
-          <CardContent className="p-5">
+          <CardContent className="p-4 sm:p-5">
             <p className="text-sm text-muted-foreground">Correos enviados</p>
-            <p className="text-3xl font-bold">{stats.emailsSent}</p>
+            <p className="text-2xl font-bold sm:text-3xl">{stats.emailsSent}</p>
           </CardContent>
         </Card>
-        <Card className="glass-card">
-          <CardContent className="p-5">
+        <Card className="glass-card col-span-2 lg:col-span-1">
+          <CardContent className="p-4 sm:p-5">
             <p className="text-sm text-muted-foreground">Entradas confirmadas</p>
-            <p className="text-3xl font-bold">{stats.confirmedParticipants}</p>
+            <p className="text-2xl font-bold sm:text-3xl">{stats.confirmedParticipants}</p>
           </CardContent>
         </Card>
       </motion.div>
@@ -84,7 +84,7 @@ export function ReportsCharts({ stats, cycleStats }: ReportsChartsProps) {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={barData} barSize={36}>
+              <BarChart data={barData} barSize={28}>
                 <XAxis
                   dataKey="name"
                   axisLine={false}
@@ -92,9 +92,11 @@ export function ReportsCharts({ stats, cycleStats }: ReportsChartsProps) {
                   tick={{ fontSize: 12, fill: "#64748b" }}
                 />
                 <YAxis
+                  allowDecimals={false}
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 12, fill: "#64748b" }}
+                  width={28}
                 />
                 <Tooltip
                   contentStyle={{

@@ -121,7 +121,7 @@ export function DashboardCycleGrid({
           <CardTitle className="text-base">Detalle por ciclo (ambos planes)</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
             {aggregated.map((cycle, index) => (
               <motion.div
                 key={cycle.ciclo}
@@ -198,7 +198,7 @@ const QUICK_ACTIONS = [
 
 export function DashboardQuickActions() {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
       {QUICK_ACTIONS.map((action, index) => (
         <motion.div
           key={action.href}
@@ -208,12 +208,12 @@ export function DashboardQuickActions() {
         >
           <Link
             href={action.href}
-            className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 transition-colors hover:border-primary/30 hover:bg-primary/5"
+            className="flex h-full items-center gap-3 rounded-xl border border-border bg-card px-3 py-3 transition-colors hover:border-primary/30 hover:bg-primary/5 sm:px-4"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
               <action.icon className="h-4 w-4 text-primary" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-sm font-medium">{action.label}</p>
               <p className="text-xs text-muted-foreground">{action.description}</p>
             </div>

@@ -12,6 +12,7 @@ interface StatCardProps {
   description?: string;
   icon: LucideIcon;
   index?: number;
+  className?: string;
 }
 
 export function StatCard({
@@ -21,6 +22,7 @@ export function StatCard({
   description,
   icon: Icon,
   index = 0,
+  className,
 }: StatCardProps) {
   const showGrowth = growth !== undefined && growth !== 0;
   const isPositive = (growth ?? 0) >= 0;
@@ -30,22 +32,22 @@ export function StatCard({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.08 }}
-      className="h-full"
+      className={cn("h-full min-w-0", className)}
     >
       <Card className="glass-card h-full overflow-hidden transition-shadow hover:shadow-md">
-        <CardContent className="flex h-full flex-col p-5">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">{title}</p>
-              <p className="text-3xl font-bold tracking-tight">{value}</p>
+        <CardContent className="flex h-full flex-col p-4 sm:p-5">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 space-y-1">
+              <p className="text-xs text-muted-foreground sm:text-sm">{title}</p>
+              <p className="text-2xl font-bold tracking-tight sm:text-3xl">{value}</p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-              <Icon className="h-5 w-5 text-primary" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 sm:h-10 sm:w-10">
+              <Icon className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
             </div>
           </div>
           <div className="mt-auto pt-3">
             {showGrowth ? (
-              <div className="flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5">
                 {isPositive ? (
                   <TrendingUp className="h-3.5 w-3.5 text-success" />
                 ) : (

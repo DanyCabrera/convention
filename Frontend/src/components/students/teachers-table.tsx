@@ -70,6 +70,94 @@ function getStatusVariant(
   }
 }
 
+type TeacherActionHandlers = Pick<
+  TeachersTableProps,
+  "onDelete" | "onEdit" | "onCancel" | "onResend"
+>;
+
+function TeacherRowActions({
+  teacher,
+  onDelete,
+  onEdit,
+  onCancel,
+  onResend,
+}: TeacherActionHandlers & { teacher: StudentWithTicket }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-9 w-9">
+          <MoreHorizontal className="h-4 w-4" />
+          <span className="sr-only">Acciones</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <Link href={`/tickets/${teacher.id}`}>
+            <Eye className="mr-2 h-4 w-4" />
+            Ver ticket
+          </Link>
+        </DropdownMenuItem>
+        {onResend && hasRealEmail(teacher.email) && (
+          <DropdownMenuItem onClick={() => onResend(teacher.id)}>
+            <Mail className="mr-2 h-4 w-4" />
+            Enviar por correo
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem onClick={() => onEdit?.(teacher)}>
+          <Pencil className="mr-2 h-4 w-4" />
+          Editar
+        </DropdownMenuItem>
+        {teacher.status !== "cancelled" && onCancel && (
+          <DropdownMenuItem onClick={() => onCancel(teacher.id)}>
+            <UserX className="mr-2 h-4 w-4" />
+            Cancelar registro
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="text-destructive focus:text-destructive"
+          onClick={() => onDelete?.(teacher.id)}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          Eliminar
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function TeacherMobileRow({
+  teacher,
+  ...handlers
+}: TeacherActionHandlers & { teacher: StudentWithTicket }) {
+  return (
+    <div className="flex items-start justify-between gap-3 p-4">
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-lg font-bold tabular-nums leading-none text-primary">
+            {formatTicketCorrelative(teacher.ticket?.correlative)}
+          </span>
+          <Badge variant={getStatusVariant(teacher.status)}>
+            {getStatusLabel(teacher.status)}
+          </Badge>
+        </div>
+        <p className="mt-1.5 break-words font-medium leading-snug">
+          {teacher.full_name}
+        </p>
+        <p className="mt-1 font-mono text-[10px] text-muted-foreground">
+          {teacher.ticket?.ticket_number ?? "—"}
+        </p>
+        <p className="mt-1 text-[11px] text-muted-foreground">
+          Registrado {formatDate(teacher.registered_at)}
+        </p>
+      </div>
+      <div className="-mr-2 -mt-1 shrink-0">
+        <TeacherRowActions teacher={teacher} {...handlers} />
+      </div>
+    </div>
+  );
+}
+
 export function TeachersTable({
   data,
   onDelete,
@@ -140,7 +228,7 @@ export function TeachersTable({
         accessorKey: "registered_at",
         header: "Registro",
         cell: ({ row }) => (
-          <span className="hidden text-muted-foreground md:inline text-xs">
+          <span className="whitespace-nowrap text-xs text-muted-foreground">
             {formatDate(row.original.registered_at)}
           </span>
         ),
@@ -158,46 +246,13 @@ export function TeachersTable({
         id: "actions",
         header: "",
         cell: ({ row }) => (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Acciones</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link href={`/tickets/${row.original.id}`}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  Ver ticket
-                </Link>
-              </DropdownMenuItem>
-              {onResend && hasRealEmail(row.original.email) && (
-                <DropdownMenuItem onClick={() => onResend(row.original.id)}>
-                  <Mail className="mr-2 h-4 w-4" />
-                  Enviar por correo
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={() => onEdit?.(row.original)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Editar
-              </DropdownMenuItem>
-              {row.original.status !== "cancelled" && onCancel && (
-                <DropdownMenuItem onClick={() => onCancel(row.original.id)}>
-                  <UserX className="mr-2 h-4 w-4" />
-                  Cancelar registro
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={() => onDelete?.(row.original.id)}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Eliminar
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <TeacherRowActions
+            teacher={row.original}
+            onDelete={onDelete}
+            onEdit={onEdit}
+            onCancel={onCancel}
+            onResend={onResend}
+          />
         ),
       },
     ],
@@ -216,14 +271,17 @@ export function TeachersTable({
     initialState: { pagination: { pageSize: 8 } },
   });
 
+  const rows = table.getRowModel().rows;
+  const emptyMessage = loading ? "Cargando docentes..." : "No se encontraron docentes";
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <Input
-          placeholder="Buscar por nombre, correo o ticket..."
+          placeholder="Buscar por nombre o ticket..."
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
-          className="max-w-sm bg-muted/50"
+          className="bg-muted/50 sm:max-w-sm"
         />
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-full sm:w-[160px]">
@@ -240,7 +298,26 @@ export function TeachersTable({
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-border bg-card">
-        <div className="overflow-x-auto">
+        <div className="divide-y divide-border md:hidden">
+          {rows.length === 0 ? (
+            <p className="px-4 py-12 text-center text-sm text-muted-foreground">
+              {emptyMessage}
+            </p>
+          ) : (
+            rows.map((row) => (
+              <TeacherMobileRow
+                key={row.id}
+                teacher={row.original}
+                onDelete={onDelete}
+                onEdit={onEdit}
+                onCancel={onCancel}
+                onResend={onResend}
+              />
+            ))
+          )}
+        </div>
+
+        <div className="hidden overflow-x-auto md:block">
           <table className="w-full text-sm">
             <thead>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -248,7 +325,7 @@ export function TeachersTable({
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="px-4 py-3 text-left text-xs font-medium text-muted-foreground"
+                      className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-muted-foreground"
                     >
                       {header.isPlaceholder
                         ? null
@@ -262,17 +339,17 @@ export function TeachersTable({
               ))}
             </thead>
             <tbody>
-              {table.getRowModel().rows.length === 0 ? (
+              {rows.length === 0 ? (
                 <tr>
                   <td
                     colSpan={columns.length}
                     className="px-4 py-12 text-center text-muted-foreground"
                   >
-                    {loading ? "Cargando docentes..." : "No se encontraron docentes"}
+                    {emptyMessage}
                   </td>
                 </tr>
               ) : (
-                table.getRowModel().rows.map((row) => (
+                rows.map((row) => (
                   <tr
                     key={row.id}
                     className="border-b border-border last:border-0 transition-colors hover:bg-muted/20"
@@ -292,7 +369,7 @@ export function TeachersTable({
           </table>
         </div>
 
-        <div className="flex items-center justify-between border-t border-border px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-4 py-3">
           <p className="text-xs text-muted-foreground">
             {filteredData.length} registro{filteredData.length !== 1 ? "s" : ""}
           </p>

@@ -55,7 +55,7 @@ export default function DashboardPage() {
       <motion.div
         initial={{ opacity: 0, y: -4 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-end gap-3"
+        className="grid grid-cols-2 gap-3 sm:flex sm:items-center sm:justify-end"
       >
         <Button variant="outline" size="sm" asChild>
           <Link href="/asistencia">Ir a asistencia</Link>
@@ -70,10 +70,13 @@ export default function DashboardPage() {
 
       {statsError && <p className="text-sm text-destructive">{statsError}</p>}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-5">
         {statsLoading ? (
           Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-32 rounded-2xl" />
+            <Skeleton
+              key={i}
+              className={`h-32 rounded-2xl ${i === 4 ? "col-span-2 xl:col-span-1" : ""}`}
+            />
           ))
         ) : (
           <>
@@ -118,6 +121,7 @@ export default function DashboardPage() {
               }
               icon={UserCheck}
               index={4}
+              className="col-span-2 xl:col-span-1"
             />
           </>
         )}
