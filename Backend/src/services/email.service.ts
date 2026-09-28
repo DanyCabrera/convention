@@ -2,14 +2,13 @@ import { Resend } from "resend";
 import nodemailer from "nodemailer";
 import type { Student, Ticket } from "../types/student.types.js";
 import { composeTicketImage } from "./ticket-image.service.js";
+import { composeTicketPdf } from "./ticket-pdf.service.js";
 import { getEventConfig } from "../lib/event-config.js";
 
 export interface TicketEmailPayload {
   student: Student;
   ticket: Ticket;
 }
-
-const TICKET_CID = "ticket-image";
 
 function escapeHtml(value: string): string {
   return value
@@ -52,17 +51,31 @@ export function getEmailConfigStatus(): {
   return { configured: false, provider: null };
 }
 
-function buildTicketEmailHtml(
-  name: string,
-  eventName: string,
-  participantType: "estudiante" | "docente" = "estudiante"
-): string {
+const EMAIL_EVENT_COPY = {
+  title:
+    "XIII Convención de Tecnologías Emergentes de la Facultad de Ingeniería en Sistemas - Centro Universitario de Retalhuleu",
+  location: "Salón municipal San Felipe",
+  startTime: "08:00 AM",
+};
+
+function formatEventDate(isoDate: string): string {
+  const date = new Date(`${isoDate}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return isoDate;
+  return new Intl.DateTimeFormat("es-GT", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
+function buildTicketEmailHtml(name: string, eventDate: string): string {
   const safeName = escapeHtml(name);
-  const safeEvent = escapeHtml(eventName);
-  const intro =
-    participantType === "docente"
-      ? "Tu registro como <strong style=\"color:#2563EB;\">docente</strong> fue exitoso. Presenta este ticket con el código QR en la entrada del evento."
-      : "Tu registro fue exitoso. Presenta este ticket con el código QR en la entrada del evento.";
+  const safeTitle = escapeHtml(EMAIL_EVENT_COPY.title);
+  const safeDate = escapeHtml(formatEventDate(eventDate));
+  const safeLocation = escapeHtml(EMAIL_EVENT_COPY.location);
+  const safeTime = escapeHtml(EMAIL_EVENT_COPY.startTime);
+  const text = "margin:0 0 16px;color:#334155;font-size:15px;line-height:1.6;";
+  const detail = "margin:0 0 6px;color:#334155;font-size:15px;line-height:1.5;";
 
   return `
 <!DOCTYPE html>
@@ -70,41 +83,47 @@ function buildTicketEmailHtml(
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ticket — ${safeEvent}</title>
+  <title>Tu ticket</title>
 </head>
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:Inter,Arial,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:32px 16px;">
     <tr>
       <td align="center">
-        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:16px;">
           <tr>
-            <td style="padding:0 0 20px;text-align:center;">
-              <p style="margin:0 0 8px;color:#475569;font-size:15px;">
-                Hola <strong style="color:#0f172a;">${safeName}</strong>,
+            <td style="padding:32px 28px;">
+              <h1 style="margin:0 0 20px;color:#0f172a;font-size:22px;line-height:1.3;">
+                ¡Gracias por tu compra ${safeName}!
+              </h1>
+              <p style="${text}">
+                Tu acceso para la <strong>${safeTitle}</strong>, ya está confirmado.
               </p>
-              <p style="margin:0;color:#64748b;font-size:14px;line-height:1.6;">
-                ${intro}
+              <div style="margin:0 0 20px;padding:16px 18px;background:#eff6ff;border-radius:12px;">
+                <p style="${detail}"><strong>Fecha:</strong> ${safeDate}</p>
+                <p style="${detail}"><strong>Lugar:</strong> ${safeLocation}</p>
+                <p style="margin:0;color:#334155;font-size:15px;line-height:1.5;"><strong>Hora de inicio:</strong> ${safeTime}</p>
+              </div>
+              <p style="${text}">
+                Adjunto encontrarás tu ticket digital. Preséntalo el día del evento
+                (impreso o desde tu celular) para el acceso.
               </p>
-            </td>
-          </tr>
-          <tr>
-            <td align="center" style="padding:0;">
-              <img
-                src="cid:${TICKET_CID}"
-                alt="Ticket ${safeEvent}"
-                width="600"
-                style="display:block;max-width:100%;height:auto;border-radius:12px;"
-              />
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:24px 0 0;text-align:center;">
-              <p style="margin:0;font-size:12px;color:#94a3b8;">
-                Este correo fue generado automáticamente. No respondas a este mensaje.
+              <p style="margin:0 0 6px;color:#0f172a;font-size:15px;font-weight:bold;">Importante:</p>
+              <ul style="margin:0 0 20px;padding-left:20px;color:#334155;font-size:15px;line-height:1.6;">
+                <li>Guarda este correo y el ticket digital.</li>
+                <li>No compartas el código QR o número de ticket con otras personas.</li>
+              </ul>
+              <p style="margin:0 0 4px;color:#334155;font-size:15px;line-height:1.6;">
+                Prepárate para un día lleno de innovación, tecnología y networking.
+              </p>
+              <p style="margin:0;color:#2563EB;font-size:16px;font-weight:bold;">
+                ¡Nos vemos en la convención!
               </p>
             </td>
           </tr>
         </table>
+        <p style="margin:16px 0 0;font-size:12px;color:#94a3b8;">
+          Este correo fue generado automáticamente. No respondas a este mensaje.
+        </p>
       </td>
     </tr>
   </table>
@@ -112,11 +131,16 @@ function buildTicketEmailHtml(
 </html>`;
 }
 
+interface TicketAttachment {
+  filename: string;
+  content: Buffer;
+}
+
 async function sendViaResend(
   to: string,
   subject: string,
   html: string,
-  ticketImage: Buffer
+  attachment: TicketAttachment
 ): Promise<void> {
   const resend = new Resend(process.env.RESEND_API_KEY!);
   const from =
@@ -129,10 +153,9 @@ async function sendViaResend(
     html,
     attachments: [
       {
-        filename: "ticket.jpeg",
-        content: ticketImage,
-        contentType: "image/jpeg",
-        contentId: TICKET_CID,
+        filename: attachment.filename,
+        content: attachment.content,
+        contentType: "application/pdf",
       },
     ],
   });
@@ -145,7 +168,7 @@ async function sendViaSmtp(
   to: string,
   subject: string,
   html: string,
-  ticketImage: Buffer
+  attachment: TicketAttachment
 ): Promise<void> {
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -164,10 +187,9 @@ async function sendViaSmtp(
     html,
     attachments: [
       {
-        filename: "ticket.jpeg",
-        content: ticketImage,
-        contentType: "image/jpeg",
-        cid: TICKET_CID,
+        filename: attachment.filename,
+        content: attachment.content,
+        contentType: "application/pdf",
       },
     ],
   });
@@ -199,17 +221,20 @@ export async function sendTicketEmail(
     participantType,
     holderName: payload.student.full_name,
   });
-  const html = buildTicketEmailHtml(
-    payload.student.full_name,
-    event.name,
-    participantType
-  );
+  const attachment: TicketAttachment = {
+    filename: `ticket-${payload.ticket.correlative}.pdf`,
+    content: await composeTicketPdf(
+      ticketImage,
+      `Ticket #${payload.ticket.correlative} — ${event.name}`
+    ),
+  };
+  const html = buildTicketEmailHtml(payload.student.full_name, event.date);
 
   const { provider } = getEmailConfigStatus();
 
   if (provider === "resend") {
-    await sendViaResend(to, subject, html, ticketImage);
+    await sendViaResend(to, subject, html, attachment);
   } else {
-    await sendViaSmtp(to, subject, html, ticketImage);
+    await sendViaSmtp(to, subject, html, attachment);
   }
 }
