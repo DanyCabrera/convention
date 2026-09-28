@@ -193,10 +193,7 @@ export async function sendTicketEmail(
 
   const event = getEmailEventConfig();
   const participantType = payload.student.participant_type ?? "estudiante";
-  const subject =
-    participantType === "docente"
-      ? `Tu ticket de docente — ${event.name}`
-      : `Tu ticket — ${event.name}`;
+  const subject = `Tu ticket — ${event.name}`;
   const ticketImage = await composeTicketImage(payload.ticket.qr_code, {
     correlative: payload.ticket.correlative,
     participantType,
