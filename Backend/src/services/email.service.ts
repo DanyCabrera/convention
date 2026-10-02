@@ -93,8 +93,7 @@ function buildTicketEmailHtml(name: string, eventDate: string): string {
           <tr>
             <td style="padding:32px 28px;">
               <h1 style="margin:0 0 20px;color:#0f172a;font-size:22px;line-height:1.3;">
-                ¡Gracias por tu compra ${safeName}!
-              </h1>
+                ¡Gracias ${safeName}, tu registro ha sido exitoso!
               <p style="${text}">
                 Tu acceso para la <strong>${safeTitle}</strong>, ya está confirmado.
               </p>
