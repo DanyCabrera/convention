@@ -88,6 +88,52 @@ function getStatusVariant(
   }
 }
 
+type EmailDelivery = "sent" | "failed" | "pending" | "none";
+
+const EMAIL_DELIVERY_META: Record<
+  EmailDelivery,
+  { label: string; variant: "success" | "destructive" | "warning" | "secondary" }
+> = {
+  sent: { label: "Enviado", variant: "success" },
+  failed: { label: "Falló", variant: "destructive" },
+  pending: { label: "Sin enviar", variant: "warning" },
+  none: { label: "Sin correo", variant: "secondary" },
+};
+
+const EMAIL_DELIVERY_OPTIONS = [
+  { value: "all", label: "Todos los envíos" },
+  { value: "sent", label: "Correo enviado" },
+  { value: "failed", label: "Envío fallido" },
+  { value: "pending", label: "Sin enviar" },
+] as const;
+
+function getEmailDelivery(student: StudentWithTicket): EmailDelivery {
+  if (!hasRealEmail(student.email)) return "none";
+  const status = student.ticket?.status;
+  if (status === "sent" || status === "delivered" || student.ticket?.sent_at) {
+    return "sent";
+  }
+  if (status === "failed") return "failed";
+  return "pending";
+}
+
+function EmailDeliveryBadge({ student }: { student: StudentWithTicket }) {
+  const delivery = getEmailDelivery(student);
+  const meta = EMAIL_DELIVERY_META[delivery];
+  return (
+    <div className="leading-tight">
+      <Badge variant={meta.variant} className="whitespace-nowrap">
+        {meta.label}
+      </Badge>
+      {delivery === "sent" && student.ticket?.sent_at && (
+        <p className="mt-1 whitespace-nowrap text-[10px] text-muted-foreground">
+          {formatDate(student.ticket.sent_at)}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function resolvePlan(student: StudentWithTicket): Plan | null {
   return (
     student.plan ??
@@ -226,6 +272,12 @@ function StudentMobileRow({
               {student.email}
             </MobileField>
           )}
+          <div className="col-span-2">
+            <dt className="mb-1 text-[11px] text-muted-foreground">Envío del ticket</dt>
+            <dd>
+              <EmailDeliveryBadge student={student} />
+            </dd>
+          </div>
         </dl>
       )}
 
@@ -254,9 +306,12 @@ export function StudentsTable({
   const [planFilter, setPlanFilter] = useState<string>(initialPlan);
   const [cicloFilter, setCicloFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [emailFilter, setEmailFilter] = useState("all");
 
   const filteredData = useMemo(() => {
     return data.filter((student) => {
+      const matchesEmail =
+        emailFilter === "all" || getEmailDelivery(student) === emailFilter;
       const matchesPlan =
         planFilter === "all" || resolvePlan(student) === planFilter;
       const matchesCiclo =
@@ -275,9 +330,15 @@ export function StudentsTable({
             stripCarnetDigits(student.carnet).includes(qDigits))) ||
         student.ticket?.ticket_number.toLowerCase().includes(q) ||
         String(student.ticket?.correlative ?? "").includes(q);
-      return matchesPlan && matchesCiclo && matchesStatus && matchesSearch;
+      return (
+        matchesPlan &&
+        matchesCiclo &&
+        matchesStatus &&
+        matchesEmail &&
+        matchesSearch
+      );
     });
-  }, [data, planFilter, cicloFilter, statusFilter, globalFilter]);
+  }, [data, planFilter, cicloFilter, statusFilter, emailFilter, globalFilter]);
 
   useEffect(() => {
     onFilteredChange?.(filteredData);
@@ -345,6 +406,12 @@ export function StudentsTable({
             {hasRealEmail(row.original.email) ? row.original.email : "—"}
           </span>
         ),
+      },
+      {
+        id: "email_delivery",
+        header: "Envío",
+        accessorFn: (student) => getEmailDelivery(student),
+        cell: ({ row }) => <EmailDeliveryBadge student={row.original} />,
       },
       {
         accessorKey: "phone",
@@ -465,6 +532,18 @@ export function StudentsTable({
             </SelectTrigger>
             <SelectContent>
               {STATUS_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={emailFilter} onValueChange={setEmailFilter}>
+            <SelectTrigger className="col-span-2 w-full sm:w-[180px]">
+              <SelectValue placeholder="Envío" />
+            </SelectTrigger>
+            <SelectContent>
+              {EMAIL_DELIVERY_OPTIONS.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
                   {opt.label}
                 </SelectItem>
