@@ -53,7 +53,7 @@ export function getEmailConfigStatus(): {
 
 const EMAIL_EVENT_COPY = {
   title:
-    "XIII Convención de Tecnologías Emergentes de la Facultad de Ingeniería en Sistemas - Centro Universitario de Retalhuleu",
+    "XIV Convención de <Nombre de la Convención> de la Facultad de Ingeniería en Sistemas - Centro Universitario de Retalhuleu",
   location: "Salón municipal San Felipe",
   startTime: "08:00 AM",
 };
