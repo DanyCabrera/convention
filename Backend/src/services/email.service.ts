@@ -142,10 +142,10 @@ function buildTicketEmailHtml(name: string, eventDate: string): string {
                 Síguenos en nuestra página oficial
               </p>
               <a href="${OFFICIAL_PAGE_URL}" target="_blank" rel="noopener" style="display:inline-block;padding:11px 24px;background:#2563EB;color:#ffffff;font-size:14px;font-weight:bold;text-decoration:none;border-radius:999px;">Visitar página oficial</a>
-              <p style="margin:0;color:#94a3b8;font-size:11px;letter-spacing:0.04em;">
+              <p style="margin: 20px 0 4px;color:#94a3b8;font-size:11px;letter-spacing:0.04em;">
                 Redes sociales de la CONVENCIÓN.
               </p>
-              <p style="margin:20px 0 4px;color:#64748b;font-size:13px;line-height:1.6;">
+              <p style="margin:0;color:#64748b;font-size:13px;line-height:1.6;">
                 ${SOCIAL_LINKS.map(
                   (link) =>
                     `<a href="${link.url}" target="_blank" rel="noopener" style="color:#2563EB;text-decoration:underline;">${link.label}</a>`
