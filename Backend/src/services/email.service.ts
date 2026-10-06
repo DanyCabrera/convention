@@ -58,6 +58,24 @@ const EMAIL_EVENT_COPY = {
   startTime: "08:00 AM",
 };
 
+const SOCIAL_LINKS = [
+  {
+    label: "Facebook",
+    url: "https://www.facebook.com/share/1LV8f9mVjm/",
+    color: "#1877F2",
+  },
+  {
+    label: "Instagram",
+    url: "https://www.instagram.com/decimosistemas.umg?stkn=ZWRrNWs5amZjYjd1",
+    color: "#E1306C",
+  },
+  {
+    label: "TikTok",
+    url: "https://www.tiktok.com/@estudiantessistemasreu1?_r=1&amp;_t=ZS-9A9nnBu25HI",
+    color: "#000000",
+  },
+] as const;
+
 function formatEventDate(isoDate: string): string {
   const date = new Date(`${isoDate}T12:00:00`);
   if (Number.isNaN(date.getTime())) return isoDate;
@@ -116,6 +134,22 @@ function buildTicketEmailHtml(name: string, eventDate: string): string {
               </p>
               <p style="margin:0;color:#2563EB;font-size:16px;font-weight:bold;">
                 ¡Nos vemos en la convención!
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 28px 28px;border-top:1px solid #e2e8f0;text-align:center;">
+              <p style="margin:0 0 14px;color:#0f172a;font-size:15px;font-weight:bold;">
+                Síguenos en nuestras páginas oficiales
+              </p>
+              <div>
+                ${SOCIAL_LINKS.map(
+                  (link) =>
+                    `<a href="${link.url}" target="_blank" rel="noopener" style="display:inline-block;margin:0 4px 8px;padding:9px 16px;background:${link.color};color:#ffffff;font-size:14px;font-weight:bold;text-decoration:none;border-radius:999px;">${link.label}</a>`
+                ).join("")}
+              </div>
+              <p style="margin:6px 0 0;color:#94a3b8;font-size:11px;letter-spacing:0.04em;">
+                Estas redes sociales son de la CONVENCIÓN.
               </p>
             </td>
           </tr>
