@@ -17,7 +17,7 @@ import { getApiBaseUrl, getApiKey } from "./api-config";
 
 function sanitizeUserFacingError(message: string): string {
   const technical =
-    /\.env|RESEND_API_KEY|SMTP_|localhost|process\.env/i.test(message);
+    /\.env|RESEND_API_KEY|SMTP_|localhost|process\.env/i.test(message); 
   if (technical) {
     return "No se pudo completar la acción. Contacta al administrador del sistema.";
   }
@@ -61,7 +61,7 @@ async function fetchApi<T>(
   endpoint: string,
   options?: RequestInit
 ): Promise<T> {
-  const res = await fetch(`${getApiBaseUrl()}${endpoint}`, {
+  const res = await fetch(`${getApiBaseUrl()}${endpoint}`, {  
     ...options,
     headers: buildHeaders(options),
   });

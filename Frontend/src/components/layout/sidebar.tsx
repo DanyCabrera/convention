@@ -12,6 +12,7 @@ import {
   BarChart3,
   Settings,
   ScanLine,
+  Dices,
   X,
 } from "lucide-react";
 import { cn, formatShortDate } from "@/lib/utils";
@@ -29,6 +30,7 @@ const iconMap = {
   BarChart3,
   Settings,
   ScanLine,
+  Dices,
 };
 
 interface SidebarProps {
