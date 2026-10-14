@@ -166,6 +166,7 @@ export default function RuletaPage() {
   const [ciclo, setCiclo] = useState("all");
   const [onlyConfirmed, setOnlyConfirmed] = useState(false);
   const [excludeWinners, setExcludeWinners] = useState(true);
+  const [excludeTenthCycle, setExcludeTenthCycle] = useState(false);
 
   const [winners, setWinners] = useState<Winner[]>([]);
   const [rotation, setRotation] = useState(0);
@@ -233,9 +234,18 @@ export default function RuletaPage() {
         (plan === "all" || s.plan === plan) &&
         (ciclo === "all" || s.ciclo === Number(ciclo)) &&
         (!onlyConfirmed || s.status === "confirmed") &&
+        (!excludeTenthCycle || s.ciclo !== 10) &&
         (!excludeWinners || !winnerIds.has(s.id))
     );
-  }, [activeStudents, plan, ciclo, onlyConfirmed, excludeWinners, winners]);
+  }, [
+    activeStudents,
+    plan,
+    ciclo,
+    onlyConfirmed,
+    excludeTenthCycle,
+    excludeWinners,
+    winners,
+  ]);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -466,6 +476,16 @@ export default function RuletaPage() {
                   disabled={spinning}
                 />
                 Quitar ganadores de la ruleta
+              </label>
+              <label className="flex cursor-pointer items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-blue-600"
+                  checked={excludeTenthCycle}
+                  onChange={(e) => setExcludeTenthCycle(e.target.checked)}
+                  disabled={spinning}
+                />
+                Quitar décimo ciclo
               </label>
             </div>
 
