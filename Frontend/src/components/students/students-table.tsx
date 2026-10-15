@@ -32,7 +32,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+import { MatchText } from "@/components/search/match-text";
+import { TableSearch } from "@/components/search/table-search";
+import { compareByQuery, studentMatchesQuery } from "@/lib/search-suggestions";
 import {
   Select,
   SelectContent,
@@ -41,7 +43,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CICLO_OPTIONS, PLAN_OPTIONS, STATUS_OPTIONS } from "@/lib/constants";
-import { displayCarnet, stripCarnetDigits } from "@/lib/carnet";
+import { displayCarnet } from "@/lib/carnet";
 import { getPlanFromCarnet, getPlanLabel, type Plan } from "@/lib/plans";
 import {
   cn,
@@ -226,8 +228,9 @@ function MobileField({
 
 function StudentMobileRow({
   student,
+  query = "",
   ...handlers
-}: RowActionHandlers & { student: StudentWithTicket }) {
+}: RowActionHandlers & { student: StudentWithTicket; query?: string }) {
   const isDocente = student.participant_type === "docente";
 
   return (
@@ -243,7 +246,7 @@ function StudentMobileRow({
             </Badge>
           </div>
           <p className="mt-1.5 break-words font-medium leading-snug">
-            {student.full_name}
+            <MatchText text={student.full_name} query={query} />
           </p>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <Badge variant={isDocente ? "secondary" : "outline"} className="text-[10px]">
@@ -309,7 +312,8 @@ export function StudentsTable({
   const [emailFilter, setEmailFilter] = useState("all");
 
   const filteredData = useMemo(() => {
-    return data.filter((student) => {
+    const query = globalFilter.trim();
+    const matches = data.filter((student) => {
       const matchesEmail =
         emailFilter === "all" || getEmailDelivery(student) === emailFilter;
       const matchesPlan =
@@ -318,18 +322,7 @@ export function StudentsTable({
         cicloFilter === "all" || student.ciclo === Number(cicloFilter);
       const matchesStatus =
         statusFilter === "all" || student.status === statusFilter;
-      const q = globalFilter.toLowerCase();
-      const qDigits = stripCarnetDigits(globalFilter);
-      const matchesSearch =
-        !globalFilter ||
-        student.full_name.toLowerCase().includes(q) ||
-        (hasRealEmail(student.email) &&
-          student.email!.toLowerCase().includes(q)) ||
-        (student.carnet &&
-          (displayCarnet(student.carnet).includes(q) ||
-            stripCarnetDigits(student.carnet).includes(qDigits))) ||
-        student.ticket?.ticket_number.toLowerCase().includes(q) ||
-        String(student.ticket?.correlative ?? "").includes(q);
+      const matchesSearch = !query || studentMatchesQuery(student, query);
       return (
         matchesPlan &&
         matchesCiclo &&
@@ -338,6 +331,8 @@ export function StudentsTable({
         matchesSearch
       );
     });
+    if (!query) return matches;
+    return matches.sort((a, b) => compareByQuery(a, b, query));
   }, [data, planFilter, cicloFilter, statusFilter, emailFilter, globalFilter]);
 
   useEffect(() => {
@@ -355,7 +350,10 @@ export function StudentsTable({
               {formatTicketCorrelative(row.original.ticket?.correlative)}
             </span>
             <p className="font-mono text-[10px] text-muted-foreground">
-              {row.original.ticket?.ticket_number ?? "—"}
+              <MatchText
+                text={row.original.ticket?.ticket_number ?? "—"}
+                query={globalFilter}
+              />
             </p>
           </div>
         ),
@@ -375,7 +373,9 @@ export function StudentsTable({
         ),
         cell: ({ row }) => (
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-medium">{row.original.full_name}</span>
+            <span className="font-medium">
+              <MatchText text={row.original.full_name} query={globalFilter} />
+            </span>
             <Badge
               variant={
                 row.original.participant_type === "docente"
@@ -394,7 +394,7 @@ export function StudentsTable({
         header: "Carnet",
         cell: ({ row }) => (
           <span className="whitespace-nowrap font-mono text-xs">
-            {displayCarnet(row.original.carnet)}
+            <MatchText text={displayCarnet(row.original.carnet)} query={globalFilter} />
           </span>
         ),
       },
@@ -403,7 +403,11 @@ export function StudentsTable({
         header: "Correo",
         cell: ({ row }) => (
           <span className="text-muted-foreground">
-            {hasRealEmail(row.original.email) ? row.original.email : "—"}
+            {hasRealEmail(row.original.email) ? (
+              <MatchText text={row.original.email ?? ""} query={globalFilter} />
+            ) : (
+              "—"
+            )}
           </span>
         ),
       },
@@ -471,7 +475,7 @@ export function StudentsTable({
     ];
 
     return cols;
-  }, [onDelete, onResend, onEdit, onCancel, compact]);
+  }, [onDelete, onResend, onEdit, onCancel, compact, globalFilter]);
 
   const table = useReactTable({
     data: filteredData,
@@ -492,14 +496,19 @@ export function StudentsTable({
 
   return (
     <div className="space-y-4">
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
       {!compact && (
-        <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:flex-wrap sm:items-center">
-          <Input
-            placeholder="Buscar por nombre, correo, carnet o ticket..."
+        <div className="space-y-3 border-b border-border bg-muted/20 p-3 sm:p-4">
+          <TableSearch
             value={globalFilter}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-            className="col-span-2 bg-muted/50 sm:max-w-sm"
+            onChange={(value) => {
+              setGlobalFilter(value);
+              table.setPageIndex(0);
+            }}
+            placeholder="Buscar nombre, correo, carnet o ticket"
+            resultCount={filteredData.length}
           />
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
           {!hidePlanFilter && (
             <Select value={planFilter} onValueChange={setPlanFilter}>
               <SelectTrigger className="col-span-2 w-full sm:w-[180px]">
@@ -550,10 +559,10 @@ export function StudentsTable({
               ))}
             </SelectContent>
           </Select>
+          </div>
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-card">
         <div className="divide-y divide-border md:hidden">
           {rows.length === 0 ? (
             <p className="px-4 py-12 text-center text-sm text-muted-foreground">
@@ -564,6 +573,7 @@ export function StudentsTable({
               <StudentMobileRow
                 key={row.id}
                 student={row.original}
+                query={globalFilter}
                 compact={compact}
                 onEdit={onEdit}
                 onResend={onResend}

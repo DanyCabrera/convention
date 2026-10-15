@@ -32,7 +32,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+import { MatchText } from "@/components/search/match-text";
+import { TableSearch } from "@/components/search/table-search";
+import { compareByQuery, studentMatchesQuery } from "@/lib/search-suggestions";
 import {
   Select,
   SelectContent,
@@ -128,8 +130,9 @@ function TeacherRowActions({
 
 function TeacherMobileRow({
   teacher,
+  query = "",
   ...handlers
-}: TeacherActionHandlers & { teacher: StudentWithTicket }) {
+}: TeacherActionHandlers & { teacher: StudentWithTicket; query?: string }) {
   return (
     <div className="flex items-start justify-between gap-3 p-4">
       <div className="min-w-0 flex-1">
@@ -142,7 +145,7 @@ function TeacherMobileRow({
           </Badge>
         </div>
         <p className="mt-1.5 break-words font-medium leading-snug">
-          {teacher.full_name}
+          <MatchText text={teacher.full_name} query={query} />
         </p>
         <p className="mt-1 font-mono text-[10px] text-muted-foreground">
           {teacher.ticket?.ticket_number ?? "—"}
@@ -173,18 +176,15 @@ export function TeachersTable({
   const [statusFilter, setStatusFilter] = useState("all");
 
   const filteredData = useMemo(() => {
-    return data.filter((teacher) => {
+    const query = globalFilter.trim();
+    const matches = data.filter((teacher) => {
       const matchesStatus =
         statusFilter === "all" || teacher.status === statusFilter;
-      const q = globalFilter.toLowerCase();
-      const matchesSearch =
-        !globalFilter ||
-        teacher.full_name.toLowerCase().includes(q) ||
-        (teacher.email?.toLowerCase().includes(q) ?? false) ||
-        teacher.ticket?.ticket_number.toLowerCase().includes(q) ||
-        String(teacher.ticket?.correlative ?? "").includes(q);
+      const matchesSearch = !query || studentMatchesQuery(teacher, query);
       return matchesStatus && matchesSearch;
     });
+    if (!query) return matches;
+    return matches.sort((a, b) => compareByQuery(a, b, query));
   }, [data, statusFilter, globalFilter]);
 
   useEffect(() => {
@@ -202,7 +202,10 @@ export function TeachersTable({
               {formatTicketCorrelative(row.original.ticket?.correlative)}
             </span>
             <p className="font-mono text-[10px] text-muted-foreground">
-              {row.original.ticket?.ticket_number ?? "—"}
+              <MatchText
+                text={row.original.ticket?.ticket_number ?? "—"}
+                query={globalFilter}
+              />
             </p>
           </div>
         ),
@@ -221,7 +224,9 @@ export function TeachersTable({
           </Button>
         ),
         cell: ({ row }) => (
-          <span className="font-medium">{row.original.full_name}</span>
+          <span className="font-medium">
+            <MatchText text={row.original.full_name} query={globalFilter} />
+          </span>
         ),
       },
       {
@@ -256,7 +261,7 @@ export function TeachersTable({
         ),
       },
     ],
-    [onDelete, onEdit, onCancel, onResend]
+    [onDelete, onEdit, onCancel, onResend, globalFilter]
   );
 
   const table = useReactTable({
@@ -276,13 +281,18 @@ export function TeachersTable({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <Input
-          placeholder="Buscar por nombre o ticket..."
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="space-y-3 border-b border-border bg-muted/20 p-3 sm:p-4">
+        <TableSearch
           value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          className="bg-muted/50 sm:max-w-sm"
+          onChange={(value) => {
+            setGlobalFilter(value);
+            table.setPageIndex(0);
+          }}
+          placeholder="Buscar nombre o ticket"
+          resultCount={filteredData.length}
         />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="Estado" />
@@ -295,9 +305,9 @@ export function TeachersTable({
             ))}
           </SelectContent>
         </Select>
+        </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-card">
         <div className="divide-y divide-border md:hidden">
           {rows.length === 0 ? (
             <p className="px-4 py-12 text-center text-sm text-muted-foreground">
@@ -308,6 +318,7 @@ export function TeachersTable({
               <TeacherMobileRow
                 key={row.id}
                 teacher={row.original}
+                query={globalFilter}
                 onDelete={onDelete}
                 onEdit={onEdit}
                 onCancel={onCancel}

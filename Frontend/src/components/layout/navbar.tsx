@@ -1,12 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FormEvent, KeyboardEvent } from "react";
-import { Calendar, Menu, Search, Settings } from "lucide-react";
+import { Calendar, Menu, Settings } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchSuggestionsInput } from "@/components/search/search-suggestions-input";
 import { useEvent } from "@/hooks/use-event";
+import { useParticipantIndex } from "@/hooks/use-participant-index";
 import { formatShortDate } from "@/lib/utils";
 import { AppLogo } from "@/components/layout/app-logo";
 
@@ -17,25 +18,13 @@ interface NavbarProps {
 export function Navbar({ onMenuClick }: NavbarProps) {
   const router = useRouter();
   const { event } = useEvent();
+  const { students, loading } = useParticipantIndex();
+  const [query, setQuery] = useState("");
 
   function goSearch(value: string) {
     const q = value.trim();
     if (!q) return;
     router.push(`/estudiantes?search=${encodeURIComponent(q)}`);
-  }
-
-  function onSearchSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const input = form.elements.namedItem("search") as HTMLInputElement;
-    goSearch(input.value);
-  }
-
-  function onSearchKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      goSearch(e.currentTarget.value);
-    }
   }
 
   return (
@@ -63,21 +52,18 @@ export function Navbar({ onMenuClick }: NavbarProps) {
         </div>
       </div>
 
-      <form
-        onSubmit={onSearchSubmit}
-        className="relative min-w-0 flex-1 md:max-w-sm lg:max-w-md"
-      >
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          name="search"
-          type="search"
-          enterKeyHint="search"
-          placeholder="Buscar nombre o ticket..."
-          onKeyDown={onSearchKeyDown}
-          className="pl-9 bg-muted/50 border-transparent focus-visible:bg-card"
-          aria-label="Buscar participantes"
-        />
-      </form>
+      <SearchSuggestionsInput
+        value={query}
+        onValueChange={setQuery}
+        students={students}
+        loading={loading}
+        placeholder="Buscar nombre o ticket..."
+        ariaLabel="Buscar participantes"
+        className="min-w-0 flex-1 md:max-w-sm lg:max-w-md"
+        clearOnSelect
+        onSelect={(student) => router.push(`/tickets/${student.id}`)}
+        onSubmitQuery={goSearch}
+      />
 
       <Link
         href="/configuracion"
