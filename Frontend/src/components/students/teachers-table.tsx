@@ -197,7 +197,7 @@ export function TeachersTable({
         accessorKey: "ticket.correlative",
         header: "Ticket",
         cell: ({ row }) => (
-          <div className="leading-tight">
+          <div className="text-center leading-tight">
             <span className="font-semibold tabular-nums text-primary">
               {formatTicketCorrelative(row.original.ticket?.correlative)}
             </span>
@@ -216,7 +216,7 @@ export function TeachersTable({
           <Button
             variant="ghost"
             size="sm"
-            className="-ml-3 h-8"
+            className="h-8"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Nombre
@@ -233,7 +233,7 @@ export function TeachersTable({
         accessorKey: "registered_at",
         header: "Registro",
         cell: ({ row }) => (
-          <span className="whitespace-nowrap text-xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             {formatDate(row.original.registered_at)}
           </span>
         ),
@@ -328,15 +328,15 @@ export function TeachersTable({
           )}
         </div>
 
-        <div className="hidden overflow-x-auto md:block">
-          <table className="w-full text-sm">
+        <div className="hidden md:block">
+          <table className="w-full table-fixed text-sm">
             <thead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id} className="border-b border-border bg-muted/30">
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-muted-foreground"
+                      className="px-3 py-3 text-center align-middle text-xs font-medium text-muted-foreground"
                     >
                       {header.isPlaceholder
                         ? null
@@ -366,7 +366,7 @@ export function TeachersTable({
                     className="border-b border-border last:border-0 transition-colors hover:bg-muted/20"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-4 py-3">
+                      <td key={cell.id} className="px-3 py-3 text-center align-middle">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()

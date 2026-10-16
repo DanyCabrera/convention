@@ -20,13 +20,18 @@ export const metadata: Metadata = {
   },
 };
 
+const themeScript = `(function(){try{if(localStorage.getItem("umg-theme")==="dark"){document.documentElement.classList.add("dark")}}catch(e){}})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${inter.variable} h-full`}>
+    <html lang="es" className={`${inter.variable} h-full`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="min-h-full antialiased font-sans">
         {children}
         <Toaster position="top-right" richColors closeButton />

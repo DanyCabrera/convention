@@ -147,7 +147,7 @@ export function DashboardInsights({
                   <Tooltip
                     contentStyle={{
                       borderRadius: "12px",
-                      border: "1px solid #e2e8f0",
+                      border: "1px solid #e6e4e0",
                       fontSize: "12px",
                     }}
                     formatter={(value: number, name: string) => [
@@ -161,13 +161,13 @@ export function DashboardInsights({
                   />
                   <Bar
                     dataKey="estudiantes"
-                    fill="#2563EB"
+                    fill="#1a1918"
                     radius={[6, 6, 0, 0]}
                     name="estudiantes"
                   />
                   <Bar
                     dataKey="asistentes"
-                    fill="#22C55E"
+                    fill="#3d5c4a"
                     radius={[6, 6, 0, 0]}
                     name="asistentes"
                   />

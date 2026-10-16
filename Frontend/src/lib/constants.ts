@@ -12,7 +12,7 @@ export const API_BASE_URL = getApiBaseUrl();
 export const EVENT = {
   name: "UMG 2026",
   date: "2026-10-24",
-  location: "SALON CAMPO DE LA FERIA, SAN FELIPE, RETALHULEU",
+  location: "Hotel Astor, Salón Villa Colonial, 5ta. Calle 4-60 Zona 1, Retalhuleu",
   university: "Universidad Mariano Galvez",
 };
 
@@ -35,6 +35,7 @@ export const NAV_ITEMS = [
   { href: "/asistencia", label: "Asistencia", icon: "ScanLine" },
   { href: "/ciclos", label: "Planes y ciclos", icon: "GraduationCap" },
   { href: "/reportes", label: "Reportes", icon: "BarChart3" },
+  { href: "/correos", label: "Correos", icon: "Mail" },
   { href: "/ruleta", label: "Ruleta", icon: "Dices" },
   { href: "/configuracion", label: "Evento", icon: "Settings" },
 ] as const;

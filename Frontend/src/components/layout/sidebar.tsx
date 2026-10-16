@@ -10,6 +10,7 @@ import {
   Ticket,
   GraduationCap,
   BarChart3,
+  Mail,
   Settings,
   ScanLine,
   Dices,
@@ -28,6 +29,7 @@ const iconMap = {
   Ticket,
   GraduationCap,
   BarChart3,
+  Mail,
   Settings,
   ScanLine,
   Dices,
@@ -115,18 +117,6 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             );
           })}
         </nav>
-
-        <div className="border-t border-border p-4">
-          <div className="rounded-xl bg-accent/60 px-3 py-2">
-            <p className="text-xs font-medium text-accent-foreground">{event.name}</p>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">
-              {formatShortDate(event.date)}
-            </p>
-            <p className="mt-0.5 text-[10px] leading-snug text-muted-foreground">
-              {event.location}
-            </p>
-          </div>
-        </div>
       </aside>
     </>
   );

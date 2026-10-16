@@ -54,7 +54,7 @@ export function getEmailConfigStatus(): {
 const EMAIL_EVENT_COPY = {
   title:
     "XIV Convención de “Más allá del código: construyendo una carrera en tecnología” de la Facultad de Ingeniería en Sistemas - Centro Universitario de Retalhuleu",
-  location: "Salón municipal San Felipe",
+  location: "Hotel Astor, Salón Villa Colonial, 5ta. Calle 4-60 Zona 1, Retalhuleu",
   startTime: "08:00 AM",
 };
 

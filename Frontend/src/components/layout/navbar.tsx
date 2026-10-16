@@ -10,6 +10,7 @@ import { useEvent } from "@/hooks/use-event";
 import { useParticipantIndex } from "@/hooks/use-participant-index";
 import { formatShortDate } from "@/lib/utils";
 import { AppLogo } from "@/components/layout/app-logo";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 
 interface NavbarProps {
   onMenuClick?: () => void;
@@ -64,6 +65,8 @@ export function Navbar({ onMenuClick }: NavbarProps) {
         onSelect={(student) => router.push(`/tickets/${student.id}`)}
         onSubmitQuery={goSearch}
       />
+
+      <ThemeToggle />
 
       <Link
         href="/configuracion"

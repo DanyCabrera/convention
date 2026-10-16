@@ -21,7 +21,7 @@ import { getPlanLabel } from "@/lib/plans";
 import { formatTicketCorrelative, getCicloLabel } from "@/lib/utils";
 import type { StudentWithTicket } from "@/types";
 
-const WHEEL_COLORS = ["#1D4ED8", "#0369A1", "#2563EB", "#1E3A8A", "#0284C7", "#1E40AF"];
+const WHEEL_COLORS = ["#111111", "#2a2a2a", "#171717", "#333333", "#1c1c1c", "#3a3a3a"];
 const SPIN_MS = 6500;
 const FULL_TURNS = 8;
 const POLL_MS = 10_000;
@@ -72,7 +72,7 @@ function drawWheel(canvas: HTMLCanvasElement, names: string[]) {
   if (names.length === 0) {
     ctx.beginPath();
     ctx.arc(r, r, r - 4, 0, Math.PI * 2);
-    ctx.fillStyle = "#e2e8f0";
+    ctx.fillStyle = "#e5e5e5";
     ctx.fill();
     return;
   }
@@ -129,7 +129,7 @@ function drawWheel(canvas: HTMLCanvasElement, names: string[]) {
   ctx.fill();
   ctx.beginPath();
   ctx.arc(r, r, r * 0.06, 0, Math.PI * 2);
-  ctx.fillStyle = "#2563EB";
+  ctx.fillStyle = "#0a0a0a";
   ctx.fill();
 }
 
@@ -460,7 +460,7 @@ export default function RuletaPage() {
               <label className="flex cursor-pointer items-center gap-2">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 accent-blue-600"
+                  className="h-4 w-4 accent-foreground"
                   checked={onlyConfirmed}
                   onChange={(e) => setOnlyConfirmed(e.target.checked)}
                   disabled={spinning}
@@ -470,7 +470,7 @@ export default function RuletaPage() {
               <label className="flex cursor-pointer items-center gap-2">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 accent-blue-600"
+                  className="h-4 w-4 accent-foreground"
                   checked={excludeWinners}
                   onChange={(e) => setExcludeWinners(e.target.checked)}
                   disabled={spinning}
@@ -480,7 +480,7 @@ export default function RuletaPage() {
               <label className="flex cursor-pointer items-center gap-2">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 accent-blue-600"
+                  className="h-4 w-4 accent-foreground"
                   checked={excludeTenthCycle}
                   onChange={(e) => setExcludeTenthCycle(e.target.checked)}
                   disabled={spinning}

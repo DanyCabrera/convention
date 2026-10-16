@@ -123,12 +123,12 @@ function EmailDeliveryBadge({ student }: { student: StudentWithTicket }) {
   const delivery = getEmailDelivery(student);
   const meta = EMAIL_DELIVERY_META[delivery];
   return (
-    <div className="leading-tight">
+    <div className="flex flex-col items-center leading-tight">
       <Badge variant={meta.variant} className="whitespace-nowrap">
         {meta.label}
       </Badge>
       {delivery === "sent" && student.ticket?.sent_at && (
-        <p className="mt-1 whitespace-nowrap text-[10px] text-muted-foreground">
+        <p className="mt-1 text-[10px] text-muted-foreground">
           {formatDate(student.ticket.sent_at)}
         </p>
       )}
@@ -235,9 +235,9 @@ function StudentMobileRow({
 
   return (
     <div className="space-y-3 p-4">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-3 text-xs">  
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2"> 
             <span className="text-lg font-bold tabular-nums leading-none text-primary">
               {formatTicketCorrelative(student.ticket?.correlative)}
             </span>
@@ -345,11 +345,11 @@ export function StudentsTable({
         accessorKey: "ticket.correlative",
         header: "Ticket",
         cell: ({ row }) => (
-          <div className="leading-tight">
-            <span className="font-semibold tabular-nums text-primary">
+          <div className="text-left leading-tight ml-4">
+            <span className="font-semibold tabular-nums text-primary"> 
               {formatTicketCorrelative(row.original.ticket?.correlative)}
             </span>
-            <p className="font-mono text-[10px] text-muted-foreground">
+            <p className="break-all font-mono text-[10px] text-muted-foreground">
               <MatchText
                 text={row.original.ticket?.ticket_number ?? "—"}
                 query={globalFilter}
@@ -364,7 +364,7 @@ export function StudentsTable({
           <Button
             variant="ghost"
             size="sm"
-            className="-ml-3 h-8"
+            className="h-8"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Nombre
@@ -372,20 +372,10 @@ export function StudentsTable({
           </Button>
         ),
         cell: ({ row }) => (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-medium">
+          <div className="flex flex-wrap items-center gap-2 ml-4">
+            <span className="break-words font-medium">
               <MatchText text={row.original.full_name} query={globalFilter} />
             </span>
-            <Badge
-              variant={
-                row.original.participant_type === "docente"
-                  ? "secondary"
-                  : "outline"
-              }
-              className="text-[10px]"
-            >
-              {getParticipantTypeLabel(row.original.participant_type)}
-            </Badge>
           </div>
         ),
       },
@@ -402,7 +392,7 @@ export function StudentsTable({
         accessorKey: "email",
         header: "Correo",
         cell: ({ row }) => (
-          <span className="text-muted-foreground">
+          <span className="block break-words text-center text-xs text-muted-foreground">
             {hasRealEmail(row.original.email) ? (
               <MatchText text={row.original.email ?? ""} query={globalFilter} />
             ) : (
@@ -420,47 +410,31 @@ export function StudentsTable({
       {
         accessorKey: "phone",
         header: "Teléfono",
-        cell: ({ row }) => <span>{row.original.phone ?? "—"}</span>,
+        cell: ({ row }) => (
+          <span className="whitespace-nowrap">{row.original.phone ?? "—"}</span>
+        ),
       },
       {
         accessorKey: "plan",
         header: "Plan",
         cell: ({ row }) => (
-          <Badge variant="secondary" className="whitespace-nowrap font-normal">
+          <Badge variant="default" className="whitespace-nowrap font-normal">
             {getPlanLabel(resolvePlan(row.original))}
-          </Badge>
+          </Badge>  
         ),
       },
       {
         accessorKey: "ciclo",
         header: "Ciclo",
         cell: ({ row }) => (
-          <Badge variant="outline" className="whitespace-nowrap">
+          <Badge variant="default" className="whitespace-nowrap">
             {getCicloLabel(row.original.ciclo)}
           </Badge>
         ),
       },
       {
-        accessorKey: "registered_at",
-        header: "Registro",
-        cell: ({ row }) => (
-          <span className="whitespace-nowrap text-xs text-muted-foreground">
-            {formatDate(row.original.registered_at)}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "status",
-        header: "Estado",
-        cell: ({ row }) => (
-          <Badge variant={getStatusVariant(row.original.status)}>
-            {getStatusLabel(row.original.status)}
-          </Badge>
-        ),
-      },
-      {
         id: "actions",
-        header: "",
+        header: "Acciones",
         cell: ({ row }) => (
           <StudentRowActions
             student={row.original}
@@ -584,15 +558,26 @@ export function StudentsTable({
           )}
         </div>
 
-        <div className="hidden overflow-x-auto md:block">
-          <table className="w-full text-sm">
+        <div className="hidden md:block">
+          <table className="w-full table-fixed text-sm">
+            <colgroup>
+              <col className="w-[9%]" />
+              <col className="w-[16%]" />
+              <col className="w-[12%]" />
+              <col className="w-[16%]" />
+              <col className="w-[11%]" />
+              <col className="w-[9%]" />
+              <col className="w-[10%]" />
+              <col className="w-[10%]" />
+              <col className="w-[7%]" />
+            </colgroup>
             <thead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id} className="border-b border-border bg-muted/30">
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium text-muted-foreground"
+                      className="px-2 py-3 text-center align-middle text-xs font-medium text-muted-foreground"
                     >
                       {header.isPlaceholder
                         ? null
@@ -622,7 +607,7 @@ export function StudentsTable({
                     className="border-b border-border last:border-0 transition-colors hover:bg-muted/20"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-4 py-3">
+                      <td key={cell.id} className="px-2 py-3 text-center align-middle">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()

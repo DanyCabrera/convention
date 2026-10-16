@@ -41,7 +41,6 @@ export function DashboardHeader({ event, stats, loading }: DashboardHeaderProps)
       animate={{ opacity: 1, y: 0 }}
       className="relative overflow-hidden rounded-2xl border border-border bg-card glass-card"
     >
-      <div className="absolute inset-0 bg-linear-to-br from-primary/8 via-transparent to-primary/4" />
       <div className="relative flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div className="flex items-start gap-4">
           <AppLogo size={52} className="hidden shadow-md sm:block" />

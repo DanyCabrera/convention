@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCicloLabel } from "@/lib/utils";
 import type { CycleStats, DashboardStats } from "@/types";
 
-const COLORS = ["#2563EB", "#3B82F6", "#60A5FA", "#93C5FD", "#BFDBFE"];
+const COLORS = ["#0a0a0a", "#404040", "#737373", "#a3a3a3", "#d4d4d4"];
 
 interface ReportsChartsProps {
   stats: DashboardStats;
@@ -89,22 +89,22 @@ export function ReportsCharts({ stats, cycleStats }: ReportsChartsProps) {
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 12, fill: "#64748b" }}
+                  tick={{ fontSize: 12, fill: "#6f6a64" }}
                 />
                 <YAxis
                   allowDecimals={false}
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 12, fill: "#64748b" }}
+                  tick={{ fontSize: 12, fill: "#6f6a64" }}
                   width={28}
                 />
                 <Tooltip
                   contentStyle={{
                     borderRadius: "12px",
-                    border: "1px solid #e2e8f0",
+                    border: "1px solid #e6e4e0",
                   }}
                 />
-                <Bar dataKey="estudiantes" fill="#2563EB" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="estudiantes" fill="#1a1918" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -136,7 +136,7 @@ export function ReportsCharts({ stats, cycleStats }: ReportsChartsProps) {
                 <Tooltip
                   contentStyle={{
                     borderRadius: "12px",
-                    border: "1px solid #e2e8f0",
+                    border: "1px solid #e6e4e0",
                   }}
                 />
               </PieChart>

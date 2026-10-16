@@ -88,7 +88,7 @@ export function TicketView({ student, onUpdated }: TicketViewProps) {
                 <p className="w-full truncate font-sans text-[length:min(5.5cqw,6.6cqh)] font-bold text-slate-900">
                   {truncateName(student.full_name)}
                 </p>
-                <p className="font-sans text-[length:min(4cqw,4.5cqh)] font-bold tracking-[0.12em] text-blue-600">
+                <p className="font-sans text-[length:min(4cqw,4.5cqh)] font-bold tracking-[0.12em] text-neutral-950">
                   DOCENTE
                 </p>
               </div>
