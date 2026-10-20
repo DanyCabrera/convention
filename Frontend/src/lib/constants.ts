@@ -10,7 +10,7 @@ export { PLANS, PLAN_META };
 export const API_BASE_URL = getApiBaseUrl();
 
 export const EVENT = {
-  name: "UMG 2026",
+  name: "UMG REU 2026",
   date: "2026-10-24",
   location: "Hotel Astor, Salón Villa Colonial, 5ta. Calle 4-60 Zona 1, Retalhuleu",
   university: "Universidad Mariano Galvez",

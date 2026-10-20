@@ -63,7 +63,7 @@ export function TicketView({ student, onUpdated }: TicketViewProps) {
         <div className="relative mx-auto w-full overflow-hidden rounded-lg shadow-xl sm:rounded-xl sm:shadow-2xl print:overflow-visible print:rounded-none print:shadow-none">
           <Image
             src={TICKET_TEMPLATE_SRC}
-            alt="Ticket UMG 2026"
+            alt="Ticket UMG REU 2026"
             width={3858}
             height={1378}
             className="h-auto w-full print:max-w-full"

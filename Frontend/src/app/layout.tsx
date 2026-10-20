@@ -11,9 +11,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "UMG 2026",
+  title: "UMG REU 2026",
   description:
-    "Registro de estudiantes y docentes, tickets con QR y control de asistencia — UMG 2026.",
+    "Registro de estudiantes y docentes, tickets con QR y control de asistencia — UMG REU 2026.",
   icons: {
     icon: APP_LOGO_SRC,
     apple: APP_LOGO_SRC,

@@ -58,6 +58,7 @@ const EMAIL_EVENT_COPY = {
   startTime: "08:00 AM",
 };
 
+const LANDING_PAGE_URL = "https://nani-28.github.io/landingpage_convencion/";
 const OFFICIAL_PAGE_URL = "https://www.facebook.com/share/1LV8f9mVjm/";
 
 const SOCIAL_LINKS = [
@@ -111,6 +112,7 @@ function buildTicketEmailHtml(name: string, eventDate: string): string {
             <td style="padding:32px 28px;">
               <h1 style="margin:0 0 20px;color:#0f172a;font-size:22px;line-height:1.3;">
                 ¡Gracias ${safeName}, tu registro ha sido exitoso!
+              </h1>
               <p style="${text}">
                 Tu acceso para la <strong>${safeTitle}</strong>, ya está confirmado.
               </p>
@@ -131,9 +133,13 @@ function buildTicketEmailHtml(name: string, eventDate: string): string {
               <p style="margin:0 0 4px;color:#334155;font-size:15px;line-height:1.6;">
                 Prepárate para un día lleno de innovación, tecnología y networking.
               </p>
-              <p style="margin:0;color:#2563EB;font-size:16px;font-weight:bold;">
+              <p style="margin:0 0 20px;color:#2563EB;font-size:16px;font-weight:bold;">
                 ¡Nos vemos en la convención!
               </p>
+              <p style="${text}">
+                Conoce a los ponentes, el lugar y cómo llegar en la página del evento.
+              </p>
+              <a href="${LANDING_PAGE_URL}" target="_blank" rel="noopener" style="display:inline-block;padding:11px 24px;background:#0f172a;color:#ffffff;font-size:14px;font-weight:bold;text-decoration:none;border-radius:999px;">Visitar página del evento</a>
             </td>
           </tr>
           <tr>
@@ -177,7 +183,7 @@ async function sendViaResend(
 ): Promise<void> {
   const resend = new Resend(process.env.RESEND_API_KEY!);
   const from =
-    process.env.EMAIL_FROM || "UMG 2026 <onboarding@resend.dev>";
+    process.env.EMAIL_FROM || "UMG REU 2026 <onboarding@resend.dev>";
 
   const { error } = await resend.emails.send({
     from,
