@@ -1,8 +1,9 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { UserCheck, Users } from "lucide-react";
+import { Trash2, UserCheck, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { displayCarnet } from "@/lib/carnet";
 import { formatDate, formatTicketCorrelative, getCicloLabel, getParticipantTypeLabel, hasRealEmail } from "@/lib/utils";
 import type { StudentWithTicket } from "@/types";
@@ -10,9 +11,11 @@ import type { StudentWithTicket } from "@/types";
 interface AttendanceListProps {
   students: StudentWithTicket[];
   loading?: boolean;
+  onRemove: (student: StudentWithTicket) => void;
+  removing?: boolean;
 }
 
-export function AttendanceList({ students, loading }: AttendanceListProps) {
+export function AttendanceList({ students, loading, onRemove, removing }: AttendanceListProps) {
   if (loading && students.length === 0) {
     return (
       <div className="py-12 text-center text-sm text-muted-foreground">
@@ -84,6 +87,17 @@ export function AttendanceList({ students, loading }: AttendanceListProps) {
                 {formatDate(student.checked_in_at ?? student.updated_at)}
               </p>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="self-start text-destructive hover:text-destructive sm:self-center"
+              onClick={() => onRemove(student)}
+              disabled={removing}
+              aria-label={`Eliminar asistencia de ${student.full_name}`}
+              title="Eliminar asistencia"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </motion.li>
           );
         })}

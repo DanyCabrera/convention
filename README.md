@@ -34,6 +34,7 @@ convention/
    - `007_add_ticket_correlative.sql`
    - `008_renumber_correlative_on_delete.sql`
    - `009_docente_email_optional.sql`
+   - `010_reset_attendance.sql`
 3. Copia de **Settings → API**:
    - `SUPABASE_URL`
    - `service_role` key → `SUPABASE_SECRET_KEY` (o `SUPABASE_SERVICE_ROLE_KEY`)
@@ -127,7 +128,14 @@ Abre **http://localhost:3000**.
 
 El repo es un monorepo: **Backend** → Railway, **Frontend** → Vercel.
 
-Antes de desplegar, confirma que en Supabase ya corriste las migraciones **001 a 006**.
+Antes de desplegar, confirma que en Supabase ya corriste las migraciones **001 a 010**.
+
+En **Asistencia → En vivo**, cada participante tiene la opción **Eliminar asistencia**.
+Al confirmar, vuelve a pendiente y se borra su hora de entrada; su registro y el mismo
+QR se conservan. La cámara se desactiva después de eliminar para evitar confirmar
+de nuevo accidentalmente el QR que siga frente al lector. Esta acción requiere la
+migración `010_reset_attendance.sql`, que actualiza la entrada y el ticket en una
+sola transacción.
 
 ### 1. Backend en Railway
 

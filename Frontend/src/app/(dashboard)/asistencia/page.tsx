@@ -13,9 +13,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { api } from "@/lib/api";
 import { ticketNumberSchema } from "@/lib/validation";
-import type { AttendanceResponse } from "@/types";
+import type { AttendanceResponse, StudentWithTicket } from "@/types";
 
 export default function AsistenciaPage() {
   const [attendance, setAttendance] = useState<AttendanceResponse>({
@@ -29,11 +32,16 @@ export default function AsistenciaPage() {
   const processingRef = useRef(false);
   const [manualTicket, setManualTicket] = useState("");
   const [manualError, setManualError] = useState<string | null>(null);
+  const [removeTarget, setRemoveTarget] = useState<StudentWithTicket | null>(null);
+  const [removing, setRemoving] = useState(false);
+  const removingRef = useRef(false);
+  const refreshVersion = useRef(0);
 
   const refresh = useCallback(async () => {
+    const version = ++refreshVersion.current;
     try {
       const data = await api.getAttendance();
-      setAttendance(data);
+      if (version === refreshVersion.current) setAttendance(data);
     } catch (err) {
       toast.error("Error al cargar", {
         description: err instanceof Error ? err.message : undefined,
@@ -51,7 +59,7 @@ export default function AsistenciaPage() {
 
   const confirmTicket = useCallback(
     async (ticketNumber: string) => {
-      if (processingRef.current || !ticketNumber.trim()) return;
+      if (processingRef.current || removingRef.current || removeTarget || !ticketNumber.trim()) return;
       processingRef.current = true;
       setProcessing(true);
 
@@ -85,8 +93,38 @@ export default function AsistenciaPage() {
         }, 1500);
       }
     },
-    [refresh]
+    [refresh, removeTarget]
   );
+
+  const removeAttendance = async () => {
+    if (!removeTarget || removingRef.current || processingRef.current) return;
+    removingRef.current = true;
+    setRemoving(true);
+    try {
+      await api.resetAttendance(removeTarget.id);
+      ++refreshVersion.current;
+      setAttendance((current) => ({
+        ...current,
+        totalConfirmed: Math.max(0, current.totalConfirmed -
+          (current.students.some((student) => student.id === removeTarget.id) ? 1 : 0)),
+        students: current.students.filter((student) => student.id !== removeTarget.id),
+      }));
+      setRemoveTarget(null);
+      // Evita que la cámara vuelva a confirmar inmediatamente el QR que sigue enfrente.
+      setScanning(false);
+      toast.success("Asistencia eliminada", {
+        description: `${removeTarget.full_name} queda pendiente de entrada. Puede usar el mismo QR.`,
+      });
+      await refresh();
+    } catch (err) {
+      toast.error("No se pudo eliminar la asistencia", {
+        description: err instanceof Error ? err.message : undefined,
+      });
+    } finally {
+      removingRef.current = false;
+      setRemoving(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -126,7 +164,7 @@ export default function AsistenciaPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {scanning ? (
-                <QrScanner onScan={confirmTicket} paused={processing} />
+                <QrScanner onScan={confirmTicket} paused={processing || !!removeTarget || removing} />
               ) : (
                 <div className="flex aspect-square items-center justify-center rounded-2xl bg-muted/50">
                   <p className="text-sm text-muted-foreground">Cámara desactivada</p>
@@ -161,7 +199,7 @@ export default function AsistenciaPage() {
                     setManualTicket(e.target.value.toUpperCase());
                     setManualError(null);
                   }}
-                  disabled={processing}
+                  disabled={processing || !!removeTarget || removing}
                   aria-invalid={!!manualError}
                   aria-describedby={manualError ? "manual-ticket-error" : undefined}
                 />
@@ -177,7 +215,7 @@ export default function AsistenciaPage() {
               </div>
               <Button
                 className="w-full"
-                disabled={processing || !manualTicket.trim()}
+                disabled={processing || !!removeTarget || removing || !manualTicket.trim()}
                 onClick={() => {
                   const parsed = ticketNumberSchema.safeParse(manualTicket);
                   if (!parsed.success) {
@@ -201,10 +239,36 @@ export default function AsistenciaPage() {
             </span>
           </CardHeader>
           <CardContent className="max-h-[560px] overflow-y-auto">
-            <AttendanceList students={attendance.students} loading={loading} />
+            <AttendanceList
+              students={attendance.students}
+              loading={loading}
+              onRemove={setRemoveTarget}
+              removing={processing || removing}
+            />
           </CardContent>
         </Card>
       </div>
+      <Dialog
+        open={!!removeTarget}
+        onOpenChange={(open) => { if (!open && !removing) setRemoveTarget(null); }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Eliminar asistencia</DialogTitle>
+            <DialogDescription>
+              Está seguro de querer eliminar la asistencia de {removeTarget?.full_name}?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" disabled={removing} onClick={() => setRemoveTarget(null)}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" disabled={removing || processing} onClick={removeAttendance}>
+              {removing ? "Eliminando..." : "Eliminar asistencia"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

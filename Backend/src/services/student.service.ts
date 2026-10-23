@@ -823,6 +823,14 @@ export async function confirmByTicketNumber(
   };
 }
 
+export async function resetAttendance(id: string): Promise<boolean> {
+  const { data, error } = await getSupabase().rpc("reset_attendance", {
+    participant_id: id,
+  });
+  if (error) throw new Error(error.message);
+  return data === true;
+}
+
 export async function getAttendance(): Promise<AttendanceResponse> {
   const supabase = getSupabase();
 

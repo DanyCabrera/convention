@@ -149,6 +149,23 @@ router.get("/attendance", async (_req, res) => {
   }
 });
 
+router.delete("/:id/attendance", async (req, res) => {
+  const parsed = studentIdSchema.safeParse(req.params.id);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "ID de participante inválido" });
+  }
+  try {
+    const reset = await studentService.resetAttendance(parsed.data);
+    if (!reset) {
+      return res.status(404).json({ error: "Participante no encontrado" });
+    }
+    res.status(204).send();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al eliminar la asistencia" });
+  }
+});
+
 router.post("/scan", scanRateLimit, async (req, res) => {
   try {
     const parsed = scanTicketSchema.safeParse(req.body);

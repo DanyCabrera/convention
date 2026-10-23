@@ -182,4 +182,7 @@ export const api = {
     }),
 
   getAttendance: () => fetchApi<AttendanceResponse>("/students/attendance"),
+
+  resetAttendance: (id: string) =>
+    fetchApi<void>(`/students/${id}/attendance`, { method: "DELETE" }),
 };
