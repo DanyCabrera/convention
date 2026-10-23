@@ -149,6 +149,11 @@ export const api = {
       method: "POST",
     }),
 
+  sendReminder: (id: string) =>
+    fetchApi<{ id: string }>(`/students/${id}/send-reminder`, {
+      method: "POST",
+    }),
+
   issueTicket: (id: string) =>
     fetchApi<StudentWithTicket>(`/students/${id}/issue-ticket`, {
       method: "POST",

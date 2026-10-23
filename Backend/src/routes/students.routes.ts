@@ -328,4 +328,23 @@ router.post("/:id/resend-ticket", async (req, res) => {
   }
 });
 
+router.post("/:id/send-reminder", async (req, res) => {
+  try {
+    const idParsed = studentIdSchema.safeParse(req.params.id);
+    if (!idParsed.success) {
+      return res.status(400).json({ error: "ID de estudiante inválido" });
+    }
+    await studentService.sendReminder(idParsed.data);
+    res.json({ id: idParsed.data });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Error al enviar el recordatorio";
+    const status = message.includes("no encontrado") ? 404 : 400;
+    if (status === 400 && !message.includes("correo")) {
+      return sendRouteError(res, "Error al enviar el recordatorio", error);
+    }
+    res.status(status).json({ error: message });
+  }
+});
+
 export default router;

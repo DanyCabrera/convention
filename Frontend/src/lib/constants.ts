@@ -36,6 +36,7 @@ export const NAV_ITEMS = [
   { href: "/ciclos", label: "Planes y ciclos", icon: "GraduationCap" },
   { href: "/reportes", label: "Reportes", icon: "BarChart3" },
   { href: "/correos", label: "Correos", icon: "Mail" },
+  { href: "/recordatorio", label: "Recordatorio", icon: "Bell" },
   { href: "/ruleta", label: "Ruleta", icon: "Dices" },
   { href: "/configuracion", label: "Evento", icon: "Settings" },
 ] as const;

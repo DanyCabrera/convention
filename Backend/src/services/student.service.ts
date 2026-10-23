@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import QRCode from "qrcode";
 import { getSupabase } from "../lib/supabase.js";
-import { sendTicketEmail } from "./email.service.js";
+import { sendReminderEmail, sendTicketEmail } from "./email.service.js";
 import type {
   CreateStudentInput,
   CreateDocenteInput,
@@ -514,6 +514,12 @@ export async function resendTicket(id: string): Promise<Ticket | null> {
 
   if (error) throw new Error(error.message);
   return (ticket as DbTicket) ?? null;
+}
+
+export async function sendReminder(id: string): Promise<void> {
+  const student = await getStudentById(id);
+  if (!student) throw new Error("Estudiante no encontrado");
+  await sendReminderEmail(student);
 }
 
 function calcGrowth(current: number, previous: number): number {
