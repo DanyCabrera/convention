@@ -382,3 +382,38 @@ export async function sendReminderEmail(student: Student): Promise<void> {
   const html = buildReminderEmailHtml();
   await sendEmail(to, REMINDER_SUBJECT, html, [], REMINDER_BODY);
 }
+
+export async function sendGameEmail(student: Student): Promise<void> {
+  const to = student.email;
+  if (!to || to.toLowerCase().endsWith("@sin-correo.local") || student.participant_type === "docente") {
+    throw new Error("Este registro no tiene correo para enviar el enlace del juego");
+  }
+  if (student.status === "cancelled") {
+    throw new Error("Este registro está cancelado");
+  }
+  if (!isEmailConfigured()) {
+    throw new Error("No se pudo enviar el correo. Contacta al administrador del sistema.");
+  }
+
+  const subject = "¡Participa en el juego de la Convención Tecnológica!";
+  const gameUrl = "https://72.61.7.158/play";
+  const message = "Te compartimos el enlace para participar en el juego de la Convención Tecnológica. ¡Ingresa y diviértete!";
+  const text = `Estimados alumnos:\n\n${message}\n\n${gameUrl}\n\nComité Organizador — XIV Convención de Ciencia y Tecnología`;
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>${escapeHtml(subject)}</title></head>
+<body style="margin:0;padding:24px 12px;background:#f1f5f9;font-family:Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:16px;">
+      <tr><td style="padding:28px 24px;color:#334155;font-size:15px;line-height:1.6;">
+        <p>Estimados alumnos:</p>
+        <p>${escapeHtml(message)}</p>
+        <p><a href="${gameUrl}" style="display:inline-block;padding:12px 24px;background:#2563eb;color:#ffffff;text-decoration:none;border-radius:8px;">Ir al juego</a></p>
+        <p><a href="${gameUrl}" style="color:#2563eb;word-break:break-all;">${gameUrl}</a></p>
+        <p>Comité Organizador — XIV Convención de Ciencia y Tecnología</p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+  await sendEmail(to, subject, html, [], text);
+}

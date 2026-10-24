@@ -364,4 +364,24 @@ router.post("/:id/send-reminder", async (req, res) => {
   }
 });
 
+router.post("/:id/send-game", async (req, res) => {
+  const parsed = studentIdSchema.safeParse(req.params.id);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "ID de estudiante inválido" });
+  }
+  try {
+    await studentService.sendGame(parsed.data);
+    res.json({ id: parsed.data });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Error al enviar el enlace del juego";
+    if (message.includes("no encontrado")) {
+      return res.status(404).json({ error: message });
+    }
+    if (message.includes("no tiene correo") || message.includes("cancelado")) {
+      return res.status(400).json({ error: message });
+    }
+    sendRouteError(res, "Error al enviar el enlace del juego", error);
+  }
+});
+
 export default router;

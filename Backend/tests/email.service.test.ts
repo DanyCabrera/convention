@@ -3,7 +3,7 @@ import { afterEach, beforeEach, mock, test } from "node:test";
 import nodemailer from "nodemailer";
 import QRCode from "qrcode";
 import { PDFDocument } from "pdf-lib";
-import { sendReminderEmail, sendTicketEmail } from "../src/services/email.service.js";
+import { sendGameEmail, sendReminderEmail, sendTicketEmail } from "../src/services/email.service.js";
 import type { Student, Ticket } from "../src/types/student.types.js";
 
 const originalEnv = { ...process.env };
@@ -55,6 +55,33 @@ function captureResend() {
   });
   return messages;
 }
+
+test("el correo del juego contiene el enlace exacto en HTML y texto sin adjuntos", async () => {
+  const messages = captureResend();
+  await sendGameEmail(student);
+  assert.equal(messages.length, 1);
+  const message = messages[0];
+  assert.equal(message.to, student.email);
+  assert.equal(message.subject, "¡Participa en el juego de la Convención Tecnológica!");
+  assert.ok(message.text.includes("enlace para participar en el juego"));
+  assert.ok(message.text.includes("https://72.61.7.158/play"));
+  assert.ok(message.html.includes('href="https://72.61.7.158/play"'));
+  assert.ok(message.html.includes("Ir al juego"));
+  assert.deepEqual(message.attachments, []);
+});
+
+test("el correo del juego excluye registros cancelados o sin correo válido", async () => {
+  const messages = captureResend();
+  for (const participant of [
+    { ...student, status: "cancelled" as const },
+    { ...student, email: null },
+    { ...student, email: "test@sin-correo.local" },
+    { ...student, participant_type: "docente" as const },
+  ]) {
+    await assert.rejects(sendGameEmail(participant), /cancelado|no tiene correo/);
+  }
+  assert.equal(messages.length, 0);
+});
 
 test("el reenvío por Resend adjunta un PDF válido y conserva el ticket existente", async () => {
   const messages = captureResend();
@@ -112,11 +139,13 @@ test("SMTP recibe el PDF como Buffer y también permite enviar recordatorios", a
   });
   await sendTicketEmail({ student, ticket: await makeTicket() });
   await sendReminderEmail(student);
+  await sendGameEmail(student);
   assert.equal(fetchMock.mock.callCount(), 0);
-  assert.equal(messages.length, 2);
+  assert.equal(messages.length, 3);
   assert.ok(Buffer.isBuffer(messages[0].attachments[0].content));
   assert.equal((await PDFDocument.load(messages[0].attachments[0].content)).getPageCount(), 1);
   assert.equal(messages[1].subject, "Información importante  XIV Convención Tecnológica");
+  assert.ok(messages[2].text.includes("https://72.61.7.158/play"));
 });
 
 test("si falla la generación del ticket no envía un correo sin adjunto", async () => {

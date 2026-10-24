@@ -154,6 +154,11 @@ export const api = {
       method: "POST",
     }),
 
+  sendGame: (id: string) =>
+    fetchApi<{ id: string }>(`/students/${id}/send-game`, {
+      method: "POST",
+    }),
+
   issueTicket: (id: string) =>
     fetchApi<StudentWithTicket>(`/students/${id}/issue-ticket`, {
       method: "POST",

@@ -235,3 +235,6 @@ El QR funciona aunque el correo no se envíe.
 - **Participantes** — listados, filtros y exportación
 - **Tickets / Asistencia** — consulta y escaneo de QR
 - **Planes y ciclos / Reportes** — métricas y exportaciones
+- **Juego** — envío del enlace `https://72.61.7.158/play` por correo, con vista previa,
+  selección de destinatarios y estado por estudiante, igual que Recordatorio.
+  Selecciona por defecto a todos los estudiantes con correo y registro no cancelado.

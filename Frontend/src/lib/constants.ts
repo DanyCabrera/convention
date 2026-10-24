@@ -37,6 +37,7 @@ export const NAV_ITEMS = [
   { href: "/reportes", label: "Reportes", icon: "BarChart3" },
   { href: "/correos", label: "Correos", icon: "Mail" },
   { href: "/recordatorio", label: "Recordatorio", icon: "Bell" },
+  { href: "/juego", label: "Juego", icon: "Gamepad2" },
   { href: "/ruleta", label: "Ruleta", icon: "Dices" },
   { href: "/configuracion", label: "Evento", icon: "Settings" },
 ] as const;
